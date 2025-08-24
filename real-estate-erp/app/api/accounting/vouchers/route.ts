@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       }
 
       // For payment vouchers, check if cashbox has sufficient balance
-      if (validatedData.type === 'PAYMENT' && cashbox.balance < validatedData.amount) {
+      if (validatedData.type === 'PAYMENT' && cashbox.balance.toNumber() < validatedData.amount) {
         throw new Error('رصيد الصندوق غير كافي')
       }
 

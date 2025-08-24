@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         throw new Error('From cashbox not found')
       }
 
-      if (fromCashbox.balance < validatedData.amount) {
+      if (fromCashbox.balance.toNumber() < validatedData.amount) {
         throw new Error('رصيد الصندوق غير كافي')
       }
 
