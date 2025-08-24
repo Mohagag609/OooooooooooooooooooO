@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, TrendingUp, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Client {
   id: string
@@ -89,10 +89,7 @@ export default function RevenuesPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          amount: parseFloat(formData.amount)
-        }),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, ChevronRight, ChevronDown, Calculator } from "lucide-react"
 import { motion } from "framer-motion"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Account {
   id: string
@@ -78,7 +78,7 @@ export default function AccountsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Wallet, ArrowUpDown, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Cashbox {
   id: string
@@ -76,7 +76,7 @@ export default function CashboxesPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

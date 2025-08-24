@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Receipt, X, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Employee {
   id: string
@@ -140,14 +140,11 @@ export default function PayrollsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
+        body: JSON.stringify(prepareFormData({
           ...formData,
           month: parseInt(formData.month.toString()),
-          year: parseInt(formData.year.toString()),
-          basicSalary: parseFloat(formData.basicSalary),
-          allowances: parseFloat(formData.allowances),
-          deductions: parseFloat(formData.deductions)
-        }),
+          year: parseInt(formData.year.toString())
+        })),
       })
       
       const result = await parseApiResponse(response)

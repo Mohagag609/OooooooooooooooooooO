@@ -29,19 +29,45 @@ export function getErrorMessage(error: any): string {
   return 'حدث خطأ غير متوقع'
 }
 
-// Clean form data - remove empty strings for optional fields
-export function cleanFormData<T extends Record<string, any>>(data: T): Partial<T> {
-  const cleaned: Partial<T> = {}
+// Clean form data - remove empty strings and undefined values
+export function cleanFormData<T extends Record<string, any>>(data: T): Record<string, any> {
+  const cleaned: Record<string, any> = {}
   
   Object.entries(data).forEach(([key, value]) => {
-    // Keep the value if it's not an empty string, or if it's a required field
-    if (value !== '') {
-      cleaned[key as keyof T] = value
-    } else if (value === '' && typeof value === 'string') {
-      // Convert empty strings to undefined for optional fields
-      cleaned[key as keyof T] = undefined as any
+    // Only include non-empty values
+    if (value !== '' && value !== null && value !== undefined) {
+      cleaned[key] = value
     }
+    // Don't include empty strings or undefined values at all
   })
   
   return cleaned
+}
+
+// Prepare form data for submission
+export function prepareFormData(data: Record<string, any>): Record<string, any> {
+  const prepared: Record<string, any> = {}
+  
+  Object.entries(data).forEach(([key, value]) => {
+    // Convert empty strings to null for optional fields
+    if (value === '') {
+      // Skip empty values entirely
+      return
+    }
+    
+    // Handle specific conversions
+    if (key === 'percentage' || key === 'budget' || key === 'price' || key === 'area' || key === 'amount' || key === 'salary' || key === 'totalAmount' || key === 'downPayment' || key === 'discount' || key === 'commission' || key === 'minQuantity' || key === 'basicSalary' || key === 'allowances' || key === 'deductions') {
+      if (value) {
+        prepared[key] = parseFloat(value)
+      }
+    } else if (key === 'floor' || key === 'totalUnits' || key === 'months' || key === 'quantity' || key === 'month' || key === 'year') {
+      if (value) {
+        prepared[key] = parseInt(value)
+      }
+    } else {
+      prepared[key] = value
+    }
+  })
+  
+  return prepared
 }

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, TrendingDown, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage, cleanFormData } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Supplier {
   id: string
@@ -89,12 +89,7 @@ export default function ExpensesPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...cleanFormData(formData),
-          amount: parseFloat(formData.amount),
-          supplierId: formData.supplierId || undefined,
-          projectId: formData.projectId || undefined
-        }),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

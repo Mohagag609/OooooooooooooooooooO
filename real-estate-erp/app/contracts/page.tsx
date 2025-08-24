@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, FileText, Calendar, Calculator, DollarSign, Users } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Contract {
   id: string
@@ -151,21 +151,12 @@ export default function ContractsPage() {
     setError('')
     
     try {
-      const dataToSend = {
-        ...formData,
-        totalAmount: parseFloat(formData.totalAmount),
-        downPayment: parseFloat(formData.downPayment),
-        months: parseInt(formData.months),
-        discount: formData.discount ? parseFloat(formData.discount) : undefined,
-        commission: formData.commission ? parseFloat(formData.commission) : undefined
-      }
-      
       const response = await fetch('/api/contracts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

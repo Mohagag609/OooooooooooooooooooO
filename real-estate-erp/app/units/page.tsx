@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Home, MapPin, Layers, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Unit {
   id: string
@@ -97,19 +97,12 @@ export default function UnitsPage() {
     setError('')
     
     try {
-      const dataToSend = {
-        ...formData,
-        floor: formData.floor ? parseInt(formData.floor) : undefined,
-        area: parseFloat(formData.area),
-        price: parseFloat(formData.price)
-      }
-      
       const response = await fetch('/api/units', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

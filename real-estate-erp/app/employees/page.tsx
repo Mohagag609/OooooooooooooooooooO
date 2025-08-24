@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Users, DollarSign, Calendar, Briefcase } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Employee {
   id: string
@@ -72,17 +72,12 @@ export default function EmployeesPage() {
     setError('')
     
     try {
-      const dataToSend = {
-        ...formData,
-        salary: parseFloat(formData.salary)
-      }
-      
       const response = await fetch('/api/employees', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)

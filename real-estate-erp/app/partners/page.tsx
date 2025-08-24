@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
 
 interface Partner {
   id: string
@@ -57,17 +57,12 @@ export default function PartnersPage() {
     setError('')
     
     try {
-      const dataToSend = {
-        ...formData,
-        percentage: formData.percentage ? parseFloat(formData.percentage) : undefined
-      }
-      
       const response = await fetch('/api/partners', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(prepareFormData(formData)),
       })
       
       const result = await parseApiResponse(response)
