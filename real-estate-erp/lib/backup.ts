@@ -85,6 +85,7 @@ export async function runLocalBackup() {
       data: {
         action: 'BACKUP',
         entity: 'Database',
+        entityId: fileName, // استخدام اسم الملف كـ entityId
         meta: {
           fileName,
           filePath,
