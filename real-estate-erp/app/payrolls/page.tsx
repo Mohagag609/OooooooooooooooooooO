@@ -75,8 +75,13 @@ export default function PayrollsPage() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [error, setError] = useState('')
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() + 1
+  const [currentYear, setCurrentYear] = useState(2024)
+  const [currentMonth, setCurrentMonth] = useState(1)
+  
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear())
+    setCurrentMonth(new Date().getMonth() + 1)
+  }, [])
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [formData, setFormData] = useState({
     employeeId: '',
