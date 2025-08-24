@@ -1,41 +1,62 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
+import { MotionSection } from '@/components/ui/motion-section'
 import { Home, Search } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-24 w-24 text-muted-foreground">
-            <Search className="h-full w-full" />
+    <MotionSection className="flex min-h-[60vh] items-center justify-center">
+      <div className="text-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ 
+            type: "spring",
+            stiffness: 260,
+            damping: 20 
+          }}
+          className="mb-8"
+        >
+          <div className="relative inline-flex">
+            <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-30 rounded-full" />
+            <h1 className="relative text-9xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              404
+            </h1>
           </div>
-          <CardTitle className="text-3xl font-bold">404</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <h2 className="text-xl font-semibold text-center">الصفحة غير موجودة</h2>
-          
-          <p className="text-center text-muted-foreground">
-            عذراً، لم نتمكن من العثور على الصفحة التي تبحث عنها. قد تكون الصفحة قد حُذفت أو تم نقلها.
-          </p>
-          
-          <div className="flex gap-3 pt-4">
-            <Button asChild className="flex-1">
-              <Link href="/dashboard">
-                <Home className="ml-2 h-4 w-4" />
-                لوحة التحكم
-              </Link>
+        </motion.div>
+        
+        <EmptyState
+          icon={Search}
+          title="الصفحة غير موجودة"
+          description="عذراً، لا يمكننا العثور على الصفحة التي تبحث عنها. ربما تم نقلها أو حذفها."
+          actionLabel="العودة للرئيسية"
+          actionIcon={Home}
+          onAction={() => window.location.href = '/'}
+        />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Button
+            variant="outline"
+            onClick={() => window.history.back()}
+          >
+            الرجوع للخلف
+          </Button>
+          <Link href="/dashboard">
+            <Button className="btn-primary">
+              لوحة التحكم
             </Button>
-            
-            <Button asChild variant="outline" className="flex-1">
-              <Link href="/">
-                الصفحة الرئيسية
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </Link>
+        </motion.div>
+      </div>
+    </MotionSection>
   )
 }

@@ -227,10 +227,10 @@ export function AppSidebar() {
     <motion.aside
       animate={{ width: collapsed ? 80 : 280 }}
       transition={{ duration: 0.3, ease: "easeInOut" as const }}
-      className={cn(
-        "relative flex h-screen flex-col border-l bg-background",
-        "shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]"
-      )}
+              className={cn(
+          "relative flex h-screen flex-col border-l bg-background/95 backdrop-blur-sm",
+          "shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]"
+        )}
     >
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b px-4">

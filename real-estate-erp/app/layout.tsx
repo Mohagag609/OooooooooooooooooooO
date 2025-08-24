@@ -1,7 +1,21 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
-import { Sidebar } from '@/components/layout/sidebar'
+import { ThemeProvider } from '@/components/providers/theme-provider'
+import { AppSidebar } from '@/components/ui/app-sidebar'
+import { GlassHeader } from '@/components/ui/glass-header'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { NotificationsDrawer } from '@/components/ui/notifications-drawer'
+import { CommandPalette } from '@/components/ui/command-palette'
+import { Footer } from '@/components/ui/footer'
 import LoggerProvider from '@/components/system/LoggerProvider'
+import { Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'نظام ERP العقاري المتكامل',
@@ -14,32 +28,51 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl">
-      <body>
-        <LoggerProvider>
-          <div className="flex h-screen overflow-hidden">
-            {/* Sidebar */}
-            <Sidebar />
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LoggerProvider>
+            <CommandPalette />
+            <div className="flex h-screen overflow-hidden bg-background">
+              {/* Sidebar */}
+              <AppSidebar />
+              
+              {/* Main Content */}
+              <div className="flex flex-1 flex-col overflow-hidden">
+                {/* Glass Header */}
+                <GlassHeader>
+                  {/* Search Bar */}
+                  <div className="relative w-full max-w-md">
+                    <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="بحث في النظام... (Ctrl+K)"
+                      className="pr-10 backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 border-white/20"
+                    />
+                  </div>
+                  
+                  {/* Header Actions */}
+                  <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <NotificationsDrawer />
+                  </div>
+                </GlassHeader>
             
-            {/* Main Content */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-              {/* Header */}
-              <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-                <h1 className="text-lg font-medium">نظام ERP العقاري</h1>
-                <div className="flex items-center gap-4">
-                  {/* User menu can be added here later */}
-                </div>
-              </header>
-            
-            {/* Page Content */}
-            <main className="flex-1 overflow-y-auto bg-muted/30">
-              <div className="container mx-auto p-6">
-                {children}
+                            {/* Page Content */}
+                <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background via-background to-muted/20">
+                  <div className="container mx-auto max-w-[1400px] px-4 md:px-6 lg:px-10 py-6 pb-14">
+                    {children}
+                  </div>
+                  <Footer />
+                </main>
               </div>
-            </main>
-          </div>
-        </div>
-        </LoggerProvider>
+            </div>
+          </LoggerProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

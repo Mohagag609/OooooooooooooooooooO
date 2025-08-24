@@ -1,13 +1,42 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Search, Edit, Trash2, X } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { DataTable } from "@/components/ui/data-table"
+import { MotionSection } from "@/components/ui/motion-section"
+import { 
+  Breadcrumb, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbList, 
+  BreadcrumbPage, 
+  BreadcrumbSeparator 
+} from "@/components/ui/breadcrumb"
+import { Plus, Search, Edit, Trash2, X, MoreHorizontal, Mail, Phone, MapPin, FileText } from "lucide-react"
 import { motion } from "framer-motion"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
+import { useErrorToast } from "@/lib/hooks/useErrorToast"
+import type { ColumnDef } from "@tanstack/react-table"
 
 interface Client {
   id: string
@@ -29,7 +58,7 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     code: '',
@@ -39,6 +68,7 @@ export default function ClientsPage() {
     address: '',
     note: ''
   })
+  const { showError, showSuccess } = useErrorToast()
 
   useEffect(() => {
     fetchClients()
@@ -50,9 +80,12 @@ export default function ClientsPage() {
       if (response.ok) {
         const data = await response.json()
         setClients(data)
+      } else {
+        const result = await parseApiResponse(response)
+        showError(getErrorMessage(result))
       }
     } catch (error) {
-      console.error('Error fetching clients:', error)
+      showError(getErrorMessage(error))
     } finally {
       setLoading(false)
     }
@@ -61,249 +94,314 @@ export default function ClientsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+
     try {
-      const response = await fetch('/api/clients', {
-        method: 'POST',
+      const method = editingClient ? 'PUT' : 'POST'
+      const url = editingClient ? `/api/clients/${editingClient.id}` : '/api/clients'
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(prepareFormData(formData)),
       })
-      
+
       const result = await parseApiResponse(response)
       
       if (response.ok) {
-        await fetchClients()
-        setFormData({ code: '', name: '', phone: '', email: '', address: '', note: '' })
+        showSuccess(editingClient ? 'تم تحديث العميل بنجاح' : 'تم إضافة العميل بنجاح')
         setShowForm(false)
+        setEditingClient(null)
+        setFormData({
+          code: '',
+          name: '',
+          phone: '',
+          email: '',
+          address: '',
+          note: ''
+        })
+        fetchClients()
       } else {
         setError(getErrorMessage(result))
       }
     } catch (error) {
-      console.error('Error creating client:', error)
-      setError('حدث خطأ في الاتصال بالخادم')
+      setError(getErrorMessage(error))
     }
   }
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.phone?.includes(searchTerm)
-  )
-
-  if (loading) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="mt-2 text-sm text-muted-foreground">جاري تحميل البيانات...</p>
-        </div>
-      </div>
-    )
+  const handleEdit = (client: Client) => {
+    setEditingClient(client)
+    setFormData({
+      code: client.code,
+      name: client.name,
+      phone: client.phone || '',
+      email: client.email || '',
+      address: client.address || '',
+      note: client.note || ''
+    })
+    setShowForm(true)
   }
 
+  const handleDelete = async (id: string) => {
+    if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
+      try {
+        const response = await fetch(`/api/clients/${id}`, {
+          method: 'DELETE',
+        })
+
+        const result = await parseApiResponse(response)
+        
+        if (response.ok) {
+          showSuccess('تم حذف العميل بنجاح')
+          fetchClients()
+        } else {
+          showError(getErrorMessage(result))
+        }
+      } catch (error) {
+        showError(getErrorMessage(error))
+      }
+    }
+  }
+
+  const columns: ColumnDef<Client>[] = useMemo(
+    () => [
+      {
+        accessorKey: "code",
+        header: "الكود",
+        cell: ({ row }) => (
+          <div className="font-medium">{row.getValue("code")}</div>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: "الاسم",
+        cell: ({ row }) => (
+          <div className="font-medium">{row.getValue("name")}</div>
+        ),
+      },
+      {
+        accessorKey: "phone",
+        header: "الهاتف",
+        cell: ({ row }) => {
+          const phone = row.getValue("phone") as string
+          return phone ? (
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <span dir="ltr">{phone}</span>
+            </div>
+          ) : null
+        },
+      },
+      {
+        accessorKey: "email",
+        header: "البريد الإلكتروني",
+        cell: ({ row }) => {
+          const email = row.getValue("email") as string
+          return email ? (
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span>{email}</span>
+            </div>
+          ) : null
+        },
+      },
+      {
+        id: "stats",
+        header: "الإحصائيات",
+        cell: ({ row }) => {
+          const client = row.original
+          return (
+            <div className="flex gap-2">
+              {client._count?.contracts > 0 && (
+                <Badge variant="secondary" className="badge-info">
+                  {client._count.contracts} عقد
+                </Badge>
+              )}
+              {client._count?.projects > 0 && (
+                <Badge variant="secondary" className="badge-success">
+                  {client._count.projects} مشروع
+                </Badge>
+              )}
+            </div>
+          )
+        },
+      },
+      {
+        id: "actions",
+        header: "الإجراءات",
+        cell: ({ row }) => {
+          const client = row.original
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">فتح القائمة</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleEdit(client)}>
+                  <Edit className="ml-2 h-4 w-4" />
+                  تعديل
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => handleDelete(client.id)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="ml-2 h-4 w-4" />
+                  حذف
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        },
+      },
+    ],
+    []
+  )
+
   return (
-    <div className="space-y-6">
+    <MotionSection className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">الرئيسية</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>العملاء</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">العملاء</h1>
+          <h1 className="text-3xl font-bold tracking-tight">العملاء</h1>
           <p className="text-muted-foreground">إدارة بيانات العملاء</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="ml-2 h-4 w-4" />
-          عميل جديد
-        </Button>
       </div>
 
-      {/* Search Bar */}
-      <Card>
-        <CardHeader>
-          <div className="relative">
-            <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="البحث عن عميل..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-10"
-            />
-          </div>
-        </CardHeader>
+      {/* Data Table */}
+      <Card className="card-modern">
+        <CardContent className="p-6">
+          <DataTable
+            columns={columns}
+            data={clients}
+            loading={loading}
+            onAdd={() => {
+              setEditingClient(null)
+              setFormData({
+                code: '',
+                name: '',
+                phone: '',
+                email: '',
+                address: '',
+                note: ''
+              })
+              setShowForm(true)
+            }}
+            emptyStateTitle="لا يوجد عملاء"
+            emptyStateDescription="ابدأ بإضافة أول عميل"
+          />
+        </CardContent>
       </Card>
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>إضافة عميل جديد</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-4"
-                  onClick={() => {
-                    setShowForm(false)
-                    setError('')
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {error && (
-                    <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                      {error}
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="code">كود العميل *</Label>
-                      <Input
-                        id="code"
-                        value={formData.code}
-                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="name">اسم العميل *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">رقم الهاتف</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">البريد الإلكتروني</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="address">العنوان</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="note">ملاحظات</Label>
-                    <textarea
-                      id="note"
-                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      value={formData.note}
-                      onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <Button type="submit" className="flex-1">
-                      حفظ
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setShowForm(false)
-                        setError('')
-                      }}
-                    >
-                      إلغاء
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      )}
+      {/* Add/Edit Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingClient ? 'تعديل بيانات العميل' : 'إضافة عميل جديد'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingClient ? 'قم بتحديث بيانات العميل' : 'أدخل بيانات العميل الجديد'}
+            </DialogDescription>
+          </DialogHeader>
 
-      {/* Clients Grid */}
-      {filteredClients.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground">لا يوجد عملاء مسجلين</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredClients.map((client) => (
-            <motion.div
-              key={client.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{client.name}</CardTitle>
-                      <CardDescription>كود: {client.code}</CardDescription>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {client.phone && (
-                    <div className="text-sm">
-                      <span className="font-medium">الهاتف:</span> {client.phone}
-                    </div>
-                  )}
-                  {client.email && (
-                    <div className="text-sm">
-                      <span className="font-medium">البريد:</span> {client.email}
-                    </div>
-                  )}
-                  {client.address && (
-                    <div className="text-sm">
-                      <span className="font-medium">العنوان:</span> {client.address}
-                    </div>
-                  )}
-                  <div className="flex gap-4 pt-2 text-xs text-muted-foreground">
-                    <span>عقود: {client._count?.contracts || 0}</span>
-                    <span>مشاريع: {client._count?.projects || 0}</span>
-                    <span>أقساط: {client._count?.installments || 0}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="code">كود العميل *</Label>
+                <Input
+                  id="code"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">اسم العميل *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">رقم الهاتف</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  dir="ltr"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">البريد الإلكتروني</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="address">العنوان</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+              </div>
+
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="note">ملاحظات</Label>
+                <Input
+                  id="note"
+                  value={formData.note}
+                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                إلغاء
+              </Button>
+              <Button type="submit" className="btn-primary">
+                {editingClient ? 'تحديث' : 'إضافة'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </MotionSection>
   )
 }

@@ -9,10 +9,22 @@ import {
   TrendingUp, 
   AlertCircle,
   Calendar,
-  Home
+  Home,
+  Command
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import { GradientHero } from "@/components/ui/gradient-hero"
+import { KpiCard } from "@/components/ui/kpi-card"
+import { MotionSection } from "@/components/ui/motion-section"
+import { 
+  Breadcrumb, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbList, 
+  BreadcrumbPage, 
+  BreadcrumbSeparator 
+} from "@/components/ui/breadcrumb"
 
 interface DashboardStats {
   totalClients: number
@@ -181,44 +193,79 @@ export default function DashboardPage() {
     )
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">لوحة التحكم</h1>
-        <p className="text-muted-foreground">نظرة عامة على أداء النظام</p>
-      </div>
+  // Calculate percentage changes (mock data for demo)
+  const calculateChange = (current: number, previous: number = 0) => {
+    if (previous === 0) return 0
+    return Math.round(((current - previous) / previous) * 100)
+  }
 
-      {/* Stats Grid */}
-      <motion.div 
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-      >
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <motion.div key={index} variants={item}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <div className={`rounded-lg p-2 ${stat.bgColor}`}>
-                    <Icon className={`h-4 w-4 ${stat.color}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )
-        })}
-      </motion.div>
+  // Open Command Palette
+  const openCommandPalette = () => {
+    const event = new KeyboardEvent('keydown', {
+      key: 'k',
+      metaKey: true,
+      ctrlKey: true
+    })
+    document.dispatchEvent(event)
+  }
+
+  return (
+    <MotionSection className="space-y-8">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">الرئيسية</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>لوحة التحكم</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Hero Section */}
+      <GradientHero
+        title="مرحباً بك في نظام ERP العقاري"
+        subtitle="إدارة متكاملة لمشاريعك العقارية وعقاراتك بكفاءة عالية"
+        ctaText="البحث السريع"
+        onCtaClick={openCommandPalette}
+        gradient="ocean"
+      />
+
+      {/* KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          title="العملاء"
+          value={stats.totalClients}
+          icon={Users}
+          change={15}
+          trend="up"
+          gradient
+        />
+        <KpiCard
+          title="المشاريع النشطة"
+          value={stats.totalProjects}
+          icon={Building2}
+          change={8}
+          trend="up"
+        />
+        <KpiCard
+          title="الوحدات المتاحة"
+          value={`${stats.availableUnits}/${stats.totalUnits}`}
+          icon={Home}
+          change={-5}
+          trend="down"
+        />
+        <KpiCard
+          title="العقود النشطة"
+          value={stats.activeContracts}
+          icon={FileText}
+          change={12}
+          trend="up"
+          gradient
+        />
+      </div>
 
       {/* Revenue Chart */}
       <motion.div
@@ -303,6 +350,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </MotionSection>
   )
 }
