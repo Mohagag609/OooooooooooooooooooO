@@ -1,84 +1,60 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { Decimal } from '@prisma/client/runtime/library'
+import { addMonths } from 'date-fns'
 
 export const dynamic = 'force-dynamic'
 
 // Schema للتحقق من البيانات
 const createContractSchema = z.object({
   contractNo: z.string().min(1, 'رقم العقد مطلوب'),
-  date: z.string().transform(str => new Date(str)),
+  date: z.string(),
   clientId: z.string().min(1, 'العميل مطلوب'),
   unitId: z.string().min(1, 'الوحدة مطلوبة'),
-  projectId: z.string().optional(),
   totalAmount: z.number().positive('المبلغ الإجمالي يجب أن يكون موجب'),
   downPayment: z.number().min(0, 'الدفعة المقدمة لا يمكن أن تكون سالبة'),
   months: z.number().int().positive('عدد الأشهر يجب أن يكون موجب'),
-  planType: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY']).default('MONTHLY'),
+  planType: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY']),
   discount: z.number().min(0).optional(),
   commission: z.number().min(0).optional(),
-  status: z.enum(['active', 'cancelled', 'completed']).default('active'),
   notes: z.string().optional()
 })
 
-// دالة لتوليد الأقساط
-async function generateInstallments(
-  contractId: string,
-  clientId: string,
-  unitId: string,
-  totalAmount: number,
-  downPayment: number,
-  months: number,
-  planType: string,
-  startDate: Date
-) {
-  const remainingAmount = totalAmount - downPayment
-  const installmentAmount = remainingAmount / months
-  const installments = []
-  
-  // تحديد الفترة بين الأقساط
-  const monthsPerInstallment = planType === 'QUARTERLY' ? 3 : planType === 'YEARLY' ? 12 : 1
-  
-  for (let i = 0; i < months; i++) {
-    const dueDate = new Date(startDate)
-    dueDate.setMonth(dueDate.getMonth() + (i + 1) * monthsPerInstallment)
-    
-    installments.push({
-      contractId,
-      clientId,
-      unitId,
-      installmentNo: i + 1,
-      dueDate,
-      amount: new Decimal(installmentAmount),
-      status: 'pending'
-    })
-  }
-  
-  // إنشاء جميع الأقساط
-  await prisma.installment.createMany({
-    data: installments
-  })
-}
-
-// جلب جميع العقود
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
     const clientId = searchParams.get('clientId')
+    const unitId = searchParams.get('unitId')
+    const status = searchParams.get('status')
     
     const where: any = {}
-    if (status) where.status = status
     if (clientId) where.clientId = clientId
+    if (unitId) where.unitId = unitId
+    if (status) where.status = status
     
     const contracts = await prisma.contract.findMany({
       where,
       include: {
-        client: true,
+        client: {
+          select: {
+            id: true,
+            code: true,
+            name: true
+          }
+        },
         unit: {
-          include: {
-            project: true
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            type: true,
+            project: {
+              select: {
+                id: true,
+                code: true,
+                name: true
+              }
+            }
           }
         },
         _count: {
@@ -87,21 +63,22 @@ export async function GET(request: Request) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: {
+        date: 'desc'
+      }
     })
     
     return NextResponse.json(contracts)
   } catch (error) {
     console.error('Error fetching contracts:', error)
     return NextResponse.json(
-      { error: 'حدث خطأ في جلب البيانات' },
+      { error: 'حدث خطأ في جلب العقود' },
       { status: 500 }
     )
   }
 }
 
-// إنشاء عقد جديد
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('Received contract data:', body)
@@ -121,51 +98,36 @@ export async function POST(request: Request) {
       )
     }
     
-    // التحقق من أن الدفعة المقدمة لا تتجاوز المبلغ الإجمالي
-    if (validatedData.downPayment > validatedData.totalAmount) {
-      return NextResponse.json(
-        { error: 'الدفعة المقدمة لا يمكن أن تتجاوز المبلغ الإجمالي' },
-        { status: 400 }
-      )
-    }
-    
-    // التحقق من حالة الوحدة
+    // التحقق من أن الوحدة متاحة
     const unit = await prisma.unit.findUnique({
       where: { id: validatedData.unitId }
     })
     
-    if (!unit) {
-      return NextResponse.json(
-        { error: 'الوحدة غير موجودة' },
-        { status: 404 }
-      )
-    }
-    
-    if (unit.status !== 'available') {
+    if (!unit || unit.status !== 'available') {
       return NextResponse.json(
         { error: 'الوحدة غير متاحة للبيع' },
         { status: 400 }
       )
     }
     
-    // بدء المعاملة
+    // بدء transaction
     const result = await prisma.$transaction(async (tx) => {
       // إنشاء العقد
       const contract = await tx.contract.create({
         data: {
-          ...validatedData,
-          totalAmount: new Decimal(validatedData.totalAmount),
-          downPayment: new Decimal(validatedData.downPayment),
-          discount: validatedData.discount ? new Decimal(validatedData.discount) : null,
-          commission: validatedData.commission ? new Decimal(validatedData.commission) : null,
-        },
-        include: {
-          client: true,
-          unit: {
-            include: {
-              project: true
-            }
-          }
+          contractNo: validatedData.contractNo,
+          date: new Date(validatedData.date),
+          clientId: validatedData.clientId,
+          unitId: validatedData.unitId,
+          projectId: unit.projectId,
+          totalAmount: validatedData.totalAmount,
+          downPayment: validatedData.downPayment,
+          months: validatedData.months,
+          planType: validatedData.planType,
+          discount: validatedData.discount,
+          commission: validatedData.commission,
+          notes: validatedData.notes,
+          status: 'active'
         }
       })
       
@@ -175,17 +137,38 @@ export async function POST(request: Request) {
         data: { status: 'sold' }
       })
       
+      // حساب الأقساط
+      const remainingAmount = validatedData.totalAmount - validatedData.downPayment - (validatedData.discount || 0)
+      const installmentAmount = remainingAmount / validatedData.months
+      
+      // تحديد الفترة الزمنية بين الأقساط
+      let monthsToAdd = 1
+      if (validatedData.planType === 'QUARTERLY') monthsToAdd = 3
+      if (validatedData.planType === 'YEARLY') monthsToAdd = 12
+      
       // توليد الأقساط
-      await generateInstallments(
-        contract.id,
-        contract.clientId,
-        contract.unitId,
-        validatedData.totalAmount,
-        validatedData.downPayment,
-        validatedData.months,
-        validatedData.planType,
-        validatedData.date
-      )
+      const installments = []
+      const startDate = new Date(validatedData.date)
+      
+      for (let i = 0; i < validatedData.months; i++) {
+        const dueDate = addMonths(startDate, (i + 1) * monthsToAdd)
+        
+        installments.push({
+          contractId: contract.id,
+          clientId: validatedData.clientId,
+          unitId: validatedData.unitId,
+          installmentNo: i + 1,
+          dueDate,
+          amount: installmentAmount,
+          paidAmount: 0,
+          status: 'pending'
+        })
+      }
+      
+      // إنشاء الأقساط
+      await tx.installment.createMany({
+        data: installments
+      })
       
       // إضافة سجل تدقيق
       await tx.auditLog.create({
@@ -197,7 +180,7 @@ export async function POST(request: Request) {
             contractNo: contract.contractNo,
             clientId: contract.clientId,
             unitId: contract.unitId,
-            totalAmount: validatedData.totalAmount
+            installmentsGenerated: installments.length
           }
         }
       })
@@ -205,7 +188,41 @@ export async function POST(request: Request) {
       return contract
     })
     
-    return NextResponse.json(result, { status: 201 })
+    // جلب العقد مع البيانات المرتبطة
+    const contractWithRelations = await prisma.contract.findUnique({
+      where: { id: result.id },
+      include: {
+        client: {
+          select: {
+            id: true,
+            code: true,
+            name: true
+          }
+        },
+        unit: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            type: true,
+            project: {
+              select: {
+                id: true,
+                code: true,
+                name: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            installments: true
+          }
+        }
+      }
+    })
+    
+    return NextResponse.json(contractWithRelations, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error('Validation error:', error.errors)
