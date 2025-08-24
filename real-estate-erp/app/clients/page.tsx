@@ -213,12 +213,12 @@ export default function ClientsPage() {
           const client = row.original
           return (
             <div className="flex gap-2">
-              {client._count?.contracts > 0 && (
+              {client._count?.contracts && client._count.contracts > 0 && (
                 <Badge variant="secondary" className="badge-info">
                   {client._count.contracts} عقد
                 </Badge>
               )}
-              {client._count?.projects > 0 && (
+              {client._count?.projects && client._count.projects > 0 && (
                 <Badge variant="secondary" className="badge-success">
                   {client._count.projects} مشروع
                 </Badge>
