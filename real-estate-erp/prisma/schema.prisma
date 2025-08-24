@@ -402,6 +402,7 @@ model Cashbox {
   name              String
   balance           Decimal    @db.Decimal(18, 2) @default(0)
   type              String     // main|sub
+  description       String?
   isActive          Boolean    @default(true)
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt

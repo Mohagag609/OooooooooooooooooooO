@@ -18,8 +18,8 @@ export async function GET() {
       include: {
         _count: {
           select: {
-            fromTransfers: true,
-            toTransfers: true,
+            transfersFrom: true,
+            transfersTo: true,
             vouchers: true
           }
         }
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
       include: {
         _count: {
           select: {
-            fromTransfers: true,
-            toTransfers: true,
+            transfersFrom: true,
+            transfersTo: true,
             vouchers: true
           }
         }

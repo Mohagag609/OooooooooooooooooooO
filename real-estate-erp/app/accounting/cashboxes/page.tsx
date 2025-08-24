@@ -20,8 +20,8 @@ interface Cashbox {
   createdAt: string
   updatedAt: string
   _count?: {
-    fromTransfers: number
-    toTransfers: number
+    transfersFrom: number
+    transfersTo: number
     vouchers: number
   }
 }
@@ -456,11 +456,11 @@ export default function CashboxesPage() {
                       <div>السندات</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium">{cashbox._count?.fromTransfers || 0}</div>
+                      <div className="font-medium">{cashbox._count?.transfersFrom || 0}</div>
                       <div>تحويلات صادرة</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium">{cashbox._count?.toTransfers || 0}</div>
+                      <div className="font-medium">{cashbox._count?.transfersTo || 0}</div>
                       <div>تحويلات واردة</div>
                     </div>
                   </div>
