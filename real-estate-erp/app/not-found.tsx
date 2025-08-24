@@ -34,7 +34,6 @@ export default function NotFound() {
           title="الصفحة غير موجودة"
           description="عذراً، لا يمكننا العثور على الصفحة التي تبحث عنها. ربما تم نقلها أو حذفها."
           actionLabel="العودة للرئيسية"
-          actionIcon={Home}
           onAction={() => window.location.href = '/'}
         />
         
