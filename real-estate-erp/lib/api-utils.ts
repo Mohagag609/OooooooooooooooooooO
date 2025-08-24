@@ -56,11 +56,11 @@ export function prepareFormData(data: Record<string, any>): Record<string, any> 
     }
     
     // Handle specific conversions
-    if (key === 'percentage' || key === 'budget' || key === 'price' || key === 'area' || key === 'amount' || key === 'salary' || key === 'totalAmount' || key === 'downPayment' || key === 'discount' || key === 'commission' || key === 'minQuantity' || key === 'basicSalary' || key === 'allowances' || key === 'deductions') {
+    if (key === 'percentage' || key === 'budget' || key === 'price' || key === 'area' || key === 'amount' || key === 'salary' || key === 'totalAmount' || key === 'downPayment' || key === 'discount' || key === 'commission' || key === 'minQuantity' || key === 'basicSalary' || key === 'allowances' || key === 'deductions' || key === 'quantity') {
       if (value) {
         prepared[key] = parseFloat(value)
       }
-    } else if (key === 'floor' || key === 'totalUnits' || key === 'months' || key === 'quantity' || key === 'month' || key === 'year') {
+    } else if (key === 'floor' || key === 'totalUnits' || key === 'months' || key === 'month' || key === 'year') {
       if (value) {
         prepared[key] = parseInt(value)
       }

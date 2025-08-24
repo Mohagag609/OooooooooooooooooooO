@@ -11,11 +11,11 @@ const createMaterialMoveSchema = z.object({
   type: z.enum(['in', 'out', 'transfer']),
   materialId: z.string().min(1, 'المادة مطلوبة'),
   warehouseId: z.string().min(1, 'المخزن مطلوب'),
-  projectId: z.string().optional(),
+  projectId: z.string().optional().nullable().transform(val => val === '' ? null : val),
   quantity: z.number().positive('الكمية يجب أن تكون موجبة'),
   price: z.number().min(0, 'السعر يجب أن يكون صفر أو أكثر'),
-  reference: z.string().optional(),
-  note: z.string().optional()
+  reference: z.string().optional().transform(val => val === '' ? undefined : val),
+  note: z.string().optional().transform(val => val === '' ? undefined : val)
 })
 
 export async function GET() {
@@ -47,7 +47,14 @@ export async function POST(request: NextRequest) {
     console.log('Received material move data:', body)
     
     // التحقق من البيانات
-    const validatedData = createMaterialMoveSchema.parse(body)
+    let validatedData
+    try {
+      validatedData = createMaterialMoveSchema.parse(body)
+      console.log('Validated data:', validatedData)
+    } catch (validationError) {
+      console.error('Validation error:', validationError)
+      throw validationError
+    }
     
     // بدء معاملة لضمان تحديث المخزون
     const result = await prisma.$transaction(async (prisma) => {

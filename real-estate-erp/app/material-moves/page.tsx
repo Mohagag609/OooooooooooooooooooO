@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, ArrowUpCircle, ArrowDownCircle, ArrowLeftRight, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
-import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
+import { parseApiResponse, getErrorMessage, prepareFormData } from "@/lib/api-utils"
+import { getTodayDateString } from "@/lib/utils/date"
+import { useErrorToast } from "@/lib/hooks/useErrorToast"
 
 interface MaterialMove {
   id: string
@@ -62,6 +64,7 @@ interface Project {
 }
 
 export default function MaterialMovesPage() {
+  const { showError, showSuccess } = useErrorToast()
   const [moves, setMoves] = useState<MaterialMove[]>([])
   const [materials, setMaterials] = useState<Material[]>([])
   const [warehouses, setWarehouses] = useState<Warehouse[]>([])
@@ -71,7 +74,7 @@ export default function MaterialMovesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     type: 'in',
     materialId: '',
     warehouseId: '',
@@ -84,6 +87,8 @@ export default function MaterialMovesPage() {
 
   useEffect(() => {
     fetchData()
+    // Set date after mount to prevent hydration mismatch
+    setFormData(prev => ({ ...prev, date: getTodayDateString() }))
   }, [])
 
   const fetchData = async () => {
@@ -112,25 +117,55 @@ export default function MaterialMovesPage() {
     e.preventDefault()
     setError('')
     
+    // Client-side validation
+    if (!formData.materialId) {
+      const msg = 'يرجى اختيار المادة'
+      setError(msg)
+      showError(msg)
+      return
+    }
+    
+    if (!formData.warehouseId) {
+      const msg = 'يرجى اختيار المخزن'
+      setError(msg)
+      showError(msg)
+      return
+    }
+    
+    if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
+      const msg = 'يرجى إدخال كمية صحيحة'
+      setError(msg)
+      showError(msg)
+      return
+    }
+    
+    if (!formData.price || parseFloat(formData.price) < 0) {
+      const msg = 'يرجى إدخال سعر صحيح'
+      setError(msg)
+      showError(msg)
+      return
+    }
+    
     try {
+      console.log('Form data before submit:', formData)
+      const preparedData = prepareFormData(formData)
+      console.log('Prepared data:', preparedData)
+      
       const response = await fetch('/api/material-moves', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          quantity: parseFloat(formData.quantity),
-          price: parseFloat(formData.price)
-        }),
+        body: JSON.stringify(preparedData),
       })
       
       const result = await parseApiResponse(response)
+      console.log('API response:', response.status, result)
       
       if (response.ok) {
         await fetchData()
         setFormData({
-          date: new Date().toISOString().split('T')[0],
+          date: getTodayDateString(),
           type: 'in',
           materialId: '',
           warehouseId: '',
@@ -141,12 +176,17 @@ export default function MaterialMovesPage() {
           note: ''
         })
         setShowForm(false)
+        showSuccess('تم إضافة حركة المواد بنجاح')
       } else {
-        setError(getErrorMessage(result))
+        const errorMsg = getErrorMessage(result)
+        setError(errorMsg)
+        showError(errorMsg)
       }
     } catch (error) {
       console.error('Error creating move:', error)
-      setError('حدث خطأ في الاتصال بالخادم')
+      const errorMsg = 'حدث خطأ في الاتصال بالخادم'
+      setError(errorMsg)
+      showError(error, errorMsg)
     }
   }
 
@@ -287,7 +327,7 @@ export default function MaterialMovesPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="material">المادة</Label>
-                    <Select value={formData.materialId} onValueChange={(value) => setFormData({ ...formData, materialId: value })} required>
+                    <Select value={formData.materialId} onValueChange={(value) => setFormData({ ...formData, materialId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="اختر المادة" />
                       </SelectTrigger>
@@ -303,7 +343,7 @@ export default function MaterialMovesPage() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="warehouse">المخزن</Label>
-                    <Select value={formData.warehouseId} onValueChange={(value) => setFormData({ ...formData, warehouseId: value })} required>
+                    <Select value={formData.warehouseId} onValueChange={(value) => setFormData({ ...formData, warehouseId: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="اختر المخزن" />
                       </SelectTrigger>
@@ -352,7 +392,6 @@ export default function MaterialMovesPage() {
                         <SelectValue placeholder="اختر المشروع" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">بدون مشروع</SelectItem>
                         {projects.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name} ({project.code})
