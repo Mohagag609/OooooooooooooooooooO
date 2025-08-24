@@ -49,6 +49,7 @@ model Supplier {
   
   expenses  Expense[]
   invoices  Invoice[]
+  vouchers  Voucher[]
 }
 
 // الشركاء
