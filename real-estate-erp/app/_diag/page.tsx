@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
-import { isBrowser, safeLocalStorage } from '@/lib/safeBrowser'
+import { isBrowser, safeLocalStorage } from '@/lib/env/safe'
+import ClientOnly from '@/components/system/ClientOnly'
 
 /**
  * صفحة تشخيص مؤقتة - للتطوير فقط
@@ -19,6 +20,7 @@ export default function DiagnosticsPage() {
     pathname: '/',
     userAgent: 'unknown',
   })
+  const [showComponents, setShowComponents] = useState(false)
 
   useEffect(() => {
     setDiagnostics({
@@ -34,7 +36,7 @@ export default function DiagnosticsPage() {
           return false
         }
       })(),
-      theme: safeLocalStorage.getItem('theme', 'system'),
+      theme: safeLocalStorage.get('theme') || 'system',
       pathname: isBrowser() ? window.location.pathname : '/',
       userAgent: isBrowser() ? navigator.userAgent : 'SSR',
     })
@@ -96,9 +98,32 @@ export default function DiagnosticsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <h3 className="font-semibold mb-3 text-red-900">اختبار Error Boundary</h3>
-            <p className="text-sm text-red-700 mb-3">
+          <div className="rounded-lg border p-4">
+            <h3 className="font-semibold mb-3">اختبار المكونات الحساسة</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              اختبر رندر المكونات التي قد تسبب hydration mismatch
+            </p>
+            <Button 
+              size="sm"
+              onClick={() => setShowComponents(!showComponents)}
+            >
+              {showComponents ? 'إخفاء' : 'عرض'} المكونات
+            </Button>
+            
+            {showComponents && (
+              <ClientOnly fallback={<div className="mt-4 p-4 bg-muted rounded">جاري التحميل...</div>}>
+                <div className="mt-4 p-4 bg-green-50 dark:bg-green-950 rounded">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    تم رندر المكونات بنجاح داخل ClientOnly
+                  </p>
+                </div>
+              </ClientOnly>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/20 p-4">
+            <h3 className="font-semibold mb-3 text-red-900 dark:text-red-200">اختبار Error Boundary</h3>
+            <p className="text-sm text-red-700 dark:text-red-300 mb-3">
               اضغط على الزر أدناه لإطلاق خطأ تجريبي واختبار صفحة الخطأ
             </p>
             <Button 

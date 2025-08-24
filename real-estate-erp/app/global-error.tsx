@@ -1,19 +1,10 @@
-'use client'
+"use client";
+import {useEffect} from "react";
 
-import { useEffect } from 'react'
-
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
-  useEffect(() => {
-    // Log the error to console for debugging
-    console.error('Global Error:', error)
-  }, [error])
-
+export default function GlobalError({error, reset}:{error: Error & {digest?: string}, reset: ()=>void}) {
+  useEffect(()=>{ console.error("[global-error]", error); },[error]);
+  const isDev = process.env.NODE_ENV !== "production";
+  
   return (
     <html>
       <body>
@@ -24,10 +15,11 @@ export default function GlobalError({
           justifyContent: 'center',
           padding: '1rem',
           backgroundColor: '#f3f4f6',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          direction: 'rtl'
         }}>
           <div style={{
-            maxWidth: '28rem',
+            maxWidth: '32rem',
             width: '100%',
             backgroundColor: 'white',
             borderRadius: '0.5rem',
@@ -35,24 +27,13 @@ export default function GlobalError({
             padding: '2rem',
             textAlign: 'center'
           }}>
-            <div style={{
-              width: '3rem',
-              height: '3rem',
-              margin: '0 auto 1rem',
-              color: '#ef4444'
-            }}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            
             <h1 style={{
               fontSize: '1.5rem',
               fontWeight: 'bold',
               marginBottom: '1rem',
               color: '#1f2937'
             }}>
-              عذراً، حدث خطأ في التطبيق
+              حدث خطأ في التطبيق
             </h1>
             
             <p style={{
@@ -60,8 +41,24 @@ export default function GlobalError({
               marginBottom: '1.5rem',
               lineHeight: '1.5'
             }}>
-              نعتذر عن هذا الخطأ. يرجى إعادة تحميل الصفحة أو المحاولة مرة أخرى لاحقاً.
+              نعتذر عن هذا الخطأ. يرجى إعادة تحميل الصفحة.
             </p>
+            
+            {isDev && error && (
+              <pre style={{
+                fontSize: '0.75rem',
+                overflow: 'auto',
+                maxHeight: '16rem',
+                padding: '0.75rem',
+                borderRadius: '0.5rem',
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                marginBottom: '1rem',
+                textAlign: 'left',
+                direction: 'ltr'
+              }}>
+                {String(error?.message)}{"\n"}{String((error as any)?.stack ?? "")}
+              </pre>
+            )}
             
             <div style={{
               display: 'flex',

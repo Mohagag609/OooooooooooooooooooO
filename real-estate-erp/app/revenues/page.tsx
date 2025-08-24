@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getTodayDateString } from '@/lib/utils/date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,7 +47,7 @@ export default function RevenuesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     amount: '',
     type: 'contract',
     clientId: '',
@@ -57,6 +58,8 @@ export default function RevenuesPage() {
 
   useEffect(() => {
     fetchData()
+    // Set date after mount to prevent hydration mismatch
+    setFormData(prev => ({ ...prev, date: getTodayDateString() }))
   }, [])
 
   const fetchData = async () => {
@@ -97,7 +100,7 @@ export default function RevenuesPage() {
       if (response.ok) {
         await fetchData()
         setFormData({
-          date: new Date().toISOString().split('T')[0],
+          date: getTodayDateString(),
           amount: '',
           type: 'contract',
           clientId: '',
