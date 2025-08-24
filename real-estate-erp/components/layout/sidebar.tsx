@@ -49,7 +49,7 @@ const menuItems: MenuItem[] = [
     children: [
       { title: "العملاء", href: "/clients", icon: Users },
       { title: "الموردين", href: "/suppliers", icon: Briefcase },
-      { title: "الشركاء", href: "/partners", icon: UserCheck },
+      { title: "الشركاء", href: "/real-estate/partners", icon: UserCheck },
     ],
   },
   {
@@ -59,8 +59,8 @@ const menuItems: MenuItem[] = [
       { title: "المشاريع", href: "/projects", icon: Building2 },
       { title: "الوحدات", href: "/units", icon: Home },
       { title: "العقود", href: "/contracts", icon: FileText },
-      { title: "الأقساط", href: "/installments", icon: Receipt },
-      { title: "الإرجاعات", href: "/returns", icon: Shield },
+      { title: "الأقساط", href: "/real-estate/installments", icon: Receipt },
+      { title: "الإرجاعات", href: "/real-estate/returns", icon: Shield },
     ],
   },
   {
@@ -68,7 +68,7 @@ const menuItems: MenuItem[] = [
     icon: Calculator,
     children: [
       { title: "دليل الحسابات", href: "/accounting/accounts", icon: Calculator },
-      { title: "القيود المحاسبية", href: "/accounting/journal", icon: FileText },
+      { title: "القيود المحاسبية", href: "/accounting/journal-entries", icon: FileText },
       { title: "الصناديق", href: "/accounting/cashboxes", icon: Database },
       { title: "سندات القبض والصرف", href: "/accounting/vouchers", icon: Receipt },
       { title: "التحويلات", href: "/accounting/transfers", icon: DollarSign },
@@ -81,7 +81,7 @@ const menuItems: MenuItem[] = [
     icon: UserCheck,
     children: [
       { title: "الموظفين", href: "/employees", icon: Users },
-      { title: "المرتبات", href: "/payroll", icon: DollarSign },
+      { title: "المرتبات", href: "/payrolls", icon: DollarSign },
     ],
   },
   {
