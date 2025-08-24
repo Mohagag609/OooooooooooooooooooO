@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// العميل
+model Client {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?    @unique
+  address   String?
+  note      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  contracts Contract[]
+}
+
+// المشروع
+model Project {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  status    String    @default("active") // active|paused|closed
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  units     Unit[]
+}
+
+// الوحدة السكنية
+model Unit {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  projectId   String?
+  type        String    // سكني، تجاري، إداري
+  area        Decimal?  @db.Decimal(10, 2)
+  price       Decimal   @db.Decimal(18, 2)
+  downPayment Decimal?  @db.Decimal(18, 2)
+  status      String    @default("available") // available|sold|returned
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  project     Project?  @relation(fields: [projectId], references: [id])
+  contracts   Contract[]
+}
+
+// العقد
+model Contract {
+  id          String       @id @default(cuid())
+  clientId    String
+  unitId      String
+  startDate   DateTime
+  totalAmount Decimal      @db.Decimal(18, 2)
+  downPayment Decimal      @db.Decimal(18, 2)
+  months      Int
+  planType    String       @default("MONTHLY") // MONTHLY|QUARTERLY|YEARLY
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  client       Client      @relation(fields: [clientId], references: [id])
+  unit         Unit        @relation(fields: [unitId], references: [id])
+  installments Installment[]
+}
+
+// القسط
+model Installment {
+  id         String    @id @default(cuid())
+  contractId String
+  amount     Decimal   @db.Decimal(18, 2)
+  dueDate    DateTime
+  status     String    @default("PENDING") // PENDING|PAID|OVERDUE
+  paidAt     DateTime?
+  createdAt  DateTime  @default(now())
+  
+  contract   Contract  @relation(fields: [contractId], references: [id])
+  bankImports BankImport[]
+}
+
+// سجل التدقيق
+model AuditLog {
+  id       String   @id @default(cuid())
+  action   String   // CREATE|UPDATE|DELETE|SEED
+  entity   String   // Client|Unit|Contract|etc
+  entityId String?
+  meta     Json?
+  at       DateTime @default(now())
+}
+
+// كشف البنك
+model BankImport {
+  id                   String       @id @default(cuid())
+  date                 DateTime
+  amount               Decimal      @db.Decimal(18, 2)
+  type                 String       // debit|credit
+  reference            String?
+  bankName             String?
+  description          String?
+  matchedInstallmentId String?
+  posted               Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  
+  matchedInstallment   Installment? @relation(fields: [matchedInstallmentId], references: [id])
+}
