@@ -110,8 +110,9 @@ async function main() {
   }
   
   console.log(`تم إنشاء ${installments.length} قسط`)
-  
-  // إنشاء شجرة الحسابات المحاسبية
+
+  // إنشاء شجرة الحسابات المحاسبية - معطل حالياً
+  /*
   console.log('إنشاء شجرة الحسابات...')
   
   // حسابات الأصول
@@ -128,25 +129,42 @@ async function main() {
       code: '1100',
       name: 'البنك',
       type: 'asset',
-      parentAccountId: assetsAccount.id
+      parentId: assetsAccount.id
     }
   })
   
   const cashAccount = await prisma.account.create({
     data: {
-      code: '1010',
+      code: '1200',
       name: 'النقدية',
       type: 'asset',
-      parentAccountId: assetsAccount.id
+      parentId: assetsAccount.id
     }
   })
   
   const arAccount = await prisma.account.create({
     data: {
-      code: '1200',
-      name: 'العملاء',
+      code: '1300',
+      name: 'المدينون',
       type: 'asset',
-      parentAccountId: assetsAccount.id
+      parentId: assetsAccount.id
+    }
+  })
+  
+  // حسابات الخصوم وحقوق الملكية
+  const liabilitiesAccount = await prisma.account.create({
+    data: {
+      code: '2000',
+      name: 'الخصوم',
+      type: 'liability'
+    }
+  })
+  
+  const equityAccount = await prisma.account.create({
+    data: {
+      code: '3000',
+      name: 'حقوق الملكية',
+      type: 'equity'
     }
   })
   
@@ -159,12 +177,12 @@ async function main() {
     }
   })
   
-  const salesRevenue = await prisma.account.create({
+  const salesAccount = await prisma.account.create({
     data: {
       code: '4100',
       name: 'إيرادات المبيعات',
       type: 'revenue',
-      parentAccountId: revenueAccount.id
+      parentId: revenueAccount.id
     }
   })
   
@@ -177,37 +195,50 @@ async function main() {
     }
   })
   
-  const generalExpense = await prisma.account.create({
-    data: {
-      code: '5100',
-      name: 'مصروفات عمومية',
-      type: 'expense',
-      parentAccountId: expenseAccount.id
-    }
-  })
-  
   console.log('تم إنشاء شجرة الحسابات')
-  
+  */
+
   // إنشاء الخزن
   const cashbox1 = await prisma.cashbox.create({
     data: {
-      code: 'CASH-1',
       name: 'الخزنة الرئيسية',
-      accountId: cashAccount.id,
-      branch: 'الفرع الرئيسي'
+      type: 'main',
+      balance: 0
     }
   })
   
   const cashbox2 = await prisma.cashbox.create({
     data: {
-      code: 'CASH-2',
       name: 'خزنة المبيعات',
-      accountId: cashAccount.id,
-      branch: 'قسم المبيعات'
+      type: 'sub',
+      balance: 0
     }
   })
   
   console.log('تم إنشاء الخزن')
+  
+  // إنشاء شركاء
+  const partner1 = await prisma.partner.create({
+    data: {
+      name: 'شريك المبيعات',
+      type: 'seller',
+      email: 'seller@example.com',
+      phone: '0501234567',
+      percentage: 30
+    }
+  })
+  
+  const partner2 = await prisma.partner.create({
+    data: {
+      name: 'مستثمر رئيسي',
+      type: 'investor',
+      email: 'investor@example.com',
+      phone: '0507654321',
+      percentage: 50
+    }
+  })
+  
+  console.log('تم إنشاء الشركاء')
   
   // إضافة سجل تدقيق
   await prisma.auditLog.create({
@@ -220,7 +251,7 @@ async function main() {
         unitsCreated: 1,
         contractsCreated: 1,
         installmentsCreated: installments.length,
-        accountsCreated: 8,
+        partnersCreated: 2,
         cashboxesCreated: 2
       }
     }

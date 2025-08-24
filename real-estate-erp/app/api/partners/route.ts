@@ -6,6 +6,9 @@ import { z } from 'zod'
 const createPartnerSchema = z.object({
   name: z.string().min(1, 'اسم الشريك مطلوب'),
   phone: z.string().optional(),
+  email: z.string().email().optional(),
+  type: z.enum(['buyer', 'seller', 'investor']),
+  percentage: z.number().min(0).max(100).optional(),
   note: z.string().optional()
 })
 
@@ -15,7 +18,10 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
-          select: { projects: true }
+          select: { 
+            contracts: true,
+            returns: true 
+          }
         }
       }
     })
@@ -41,7 +47,10 @@ export async function POST(request: Request) {
       data: validatedData,
       include: {
         _count: {
-          select: { projects: true }
+          select: { 
+            contracts: true,
+            returns: true 
+          }
         }
       }
     })

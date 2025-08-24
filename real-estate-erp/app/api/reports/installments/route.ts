@@ -25,7 +25,7 @@ export async function GET() {
     const pdfBuffer = await generatePdf(docDefinition)
     
     // إرجاع PDF كـ response
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="installments-report-${new Date().toISOString().split('T')[0]}.pdf"`

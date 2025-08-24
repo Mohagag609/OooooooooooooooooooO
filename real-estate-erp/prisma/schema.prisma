@@ -22,6 +22,7 @@ model Client {
   updatedAt DateTime   @updatedAt
   
   contracts Contract[]
+  vouchers  Voucher[]
 }
 
 // المشروع
@@ -66,6 +67,7 @@ model Contract {
   downPayment Decimal      @db.Decimal(18, 2)
   months      Int
   planType    String       @default("MONTHLY") // MONTHLY|QUARTERLY|YEARLY
+  status      String       @default("active") // active|cancelled|completed
   notes       String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -73,6 +75,8 @@ model Contract {
   client       Client      @relation(fields: [clientId], references: [id])
   unit         Unit        @relation(fields: [unitId], references: [id])
   installments Installment[]
+  partners     Partner[]
+  returns      Return[]
 }
 
 // القسط
@@ -113,4 +117,86 @@ model BankImport {
   createdAt            DateTime     @default(now())
   
   matchedInstallment   Installment? @relation(fields: [matchedInstallmentId], references: [id])
+}
+
+// الشريك
+model Partner {
+  id          String     @id @default(cuid())
+  name        String
+  phone       String?
+  email       String?
+  type        String     // buyer|seller|investor
+  percentage  Float?     // نسبة الشراكة
+  note        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  contracts   Contract[]
+  returns     Return[]
+}
+
+// الإرجاع
+model Return {
+  id          String    @id @default(cuid())
+  contractId  String
+  partnerId   String?
+  date        DateTime
+  amount      Decimal   @db.Decimal(18, 2)
+  reason      String?
+  status      String    @default("pending") // pending|approved|rejected
+  note        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  contract    Contract  @relation(fields: [contractId], references: [id])
+  partner     Partner?  @relation(fields: [partnerId], references: [id])
+}
+
+// الصندوق
+model Cashbox {
+  id                String     @id @default(cuid())
+  name              String
+  balance           Decimal    @db.Decimal(18, 2) @default(0)
+  type              String     // main|sub
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  transfersFrom     Transfer[] @relation("FromCashbox")
+  transfersTo       Transfer[] @relation("ToCashbox")
+  vouchers          Voucher[]
+}
+
+// التحويل بين الصناديق
+model Transfer {
+  id            String    @id @default(cuid())
+  fromCashboxId String
+  toCashboxId   String
+  amount        Decimal   @db.Decimal(18, 2)
+  date          DateTime
+  description   String?
+  reference     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  fromCashbox   Cashbox   @relation("FromCashbox", fields: [fromCashboxId], references: [id])
+  toCashbox     Cashbox   @relation("ToCashbox", fields: [toCashboxId], references: [id])
+}
+
+// سند القبض/الصرف
+model Voucher {
+  id          String    @id @default(cuid())
+  type        String    // receipt|payment
+  voucherNo   String    @unique
+  date        DateTime
+  amount      Decimal   @db.Decimal(18, 2)
+  cashboxId   String
+  clientId    String?
+  description String?
+  reference   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  cashbox     Cashbox   @relation(fields: [cashboxId], references: [id])
+  client      Client?   @relation(fields: [clientId], references: [id])
 }

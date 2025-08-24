@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createCashTransfer } from '@/lib/accounting'
 import { prisma } from '@/lib/prisma'
 
 const transferSchema = z.object({
-  date: z.string().transform(str => new Date(str)),
   fromCashboxId: z.string(),
   toCashboxId: z.string(),
-  amount: z.number().positive('المبلغ يجب أن يكون موجب'),
-  note: z.string().optional()
+  amount: z.number().positive(),
+  date: z.string().transform(str => new Date(str)),
+  description: z.string().optional(),
+  reference: z.string().optional(),
 })
 
 export async function POST(request: Request) {
@@ -19,53 +19,59 @@ export async function POST(request: Request) {
     // التحقق من عدم التحويل لنفس الخزنة
     if (validatedData.fromCashboxId === validatedData.toCashboxId) {
       return NextResponse.json(
-        { error: 'لا يمكن التحويل من وإلى نفس الخزنة' },
+        { error: 'Cannot transfer to the same cashbox' },
         { status: 400 }
       )
     }
     
-    const transfer = await createCashTransfer({
-      date: validatedData.date,
-      fromCashboxId: validatedData.fromCashboxId,
-      toCashboxId: validatedData.toCashboxId,
-      amount: validatedData.amount,
-      note: validatedData.note
-    })
-    
-    // إضافة سجل تدقيق
-    await prisma.auditLog.create({
+    // Create the transfer
+    const transfer = await prisma.transfer.create({
       data: {
-        action: 'CREATE',
-        entity: 'Transfer',
-        entityId: transfer.id,
-        meta: {
-          amount: validatedData.amount,
-          fromCashboxId: validatedData.fromCashboxId,
-          toCashboxId: validatedData.toCashboxId,
-          note: validatedData.note
-        }
+        fromCashboxId: validatedData.fromCashboxId,
+        toCashboxId: validatedData.toCashboxId,
+        amount: validatedData.amount,
+        date: validatedData.date,
+        description: validatedData.description,
+        reference: validatedData.reference,
+      },
+      include: {
+        fromCashbox: true,
+        toCashbox: true
       }
     })
     
-    return NextResponse.json(transfer, { status: 201 })
+    // Update cashbox balances
+    await prisma.$transaction([
+      prisma.cashbox.update({
+        where: { id: validatedData.fromCashboxId },
+        data: {
+          balance: {
+            decrement: validatedData.amount
+          }
+        }
+      }),
+      prisma.cashbox.update({
+        where: { id: validatedData.toCashboxId },
+        data: {
+          balance: {
+            increment: validatedData.amount
+          }
+        }
+      })
+    ])
+    
+    return NextResponse.json(transfer)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'بيانات غير صحيحة', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
+        { error: 'Invalid data', details: error.errors },
         { status: 400 }
       )
     }
     
     console.error('Error creating transfer:', error)
     return NextResponse.json(
-      { error: 'حدث خطأ في إنشاء التحويل' },
+      { error: 'Failed to create transfer' },
       { status: 500 }
     )
   }
@@ -77,25 +83,13 @@ export async function GET() {
       orderBy: { date: 'desc' },
       include: {
         fromCashbox: true,
-        toCashbox: true,
-        journalEntry: {
-          include: {
-            lines: {
-              include: {
-                account: true
-              }
-            }
-          }
-        }
+        toCashbox: true
       }
     })
     
     return NextResponse.json(transfers)
   } catch (error) {
     console.error('Error fetching transfers:', error)
-    return NextResponse.json(
-      { error: 'حدث خطأ في جلب التحويلات' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch transfers' }, { status: 500 })
   }
 }
