@@ -137,7 +137,13 @@ export async function POST(request: NextRequest) {
           action: 'CREATE',
           entity: 'Voucher',
           entityId: voucher.id,
-          details: `${validatedData.type} voucher ${voucherNo} created: ${validatedData.amount} for ${entityName || 'cash'}`
+          meta: {
+            voucherNo,
+            type: validatedData.type,
+            amount: validatedData.amount,
+            entity: entityName || 'cash',
+            description: `${validatedData.type} voucher ${voucherNo} created: ${validatedData.amount} for ${entityName || 'cash'}`
+          }
         }
       })
 

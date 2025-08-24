@@ -124,7 +124,13 @@ export async function POST(request: NextRequest) {
           action: 'CREATE',
           entity: 'Transfer',
           entityId: transfer.id,
-          details: `Transfer ${transferNumber} created: ${validatedData.amount} from ${fromCashbox.name} to ${toCashbox.name}`
+          meta: {
+            transferNumber,
+            amount: validatedData.amount,
+            from: fromCashbox.name,
+            to: toCashbox.name,
+            description: `Transfer ${transferNumber} created: ${validatedData.amount} from ${fromCashbox.name} to ${toCashbox.name}`
+          }
         }
       })
 

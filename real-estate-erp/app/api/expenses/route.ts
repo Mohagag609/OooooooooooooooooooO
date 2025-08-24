@@ -65,7 +65,11 @@ export async function POST(request: NextRequest) {
         action: 'CREATE',
         entity: 'Expense',
         entityId: expense.id,
-        details: `Expense created: ${expense.amount} for ${expense.type}`
+        meta: {
+          amount: expense.amount.toString(),
+          type: expense.type,
+          description: `Expense created: ${expense.amount} for ${expense.type}`
+        }
       }
     })
     
