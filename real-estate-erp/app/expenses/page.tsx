@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, TrendingDown, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage, cleanFormData } from "@/lib/api-utils"
 
 interface Supplier {
   id: string
@@ -89,12 +90,14 @@ export default function ExpensesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          amount: parseFloat(formData.amount)
+          ...cleanFormData(formData),
+          amount: parseFloat(formData.amount),
+          supplierId: formData.supplierId || undefined,
+          projectId: formData.projectId || undefined
         }),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchData()
@@ -109,7 +112,7 @@ export default function ExpensesPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating expense:', error)

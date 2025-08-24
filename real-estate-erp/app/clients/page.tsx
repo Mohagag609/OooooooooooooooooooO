@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Search, Edit, Trash2, X } from "lucide-react"
 import { motion } from "framer-motion"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Client {
   id: string
@@ -70,14 +71,14 @@ export default function ClientsPage() {
         body: JSON.stringify(formData),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchClients()
         setFormData({ code: '', name: '', phone: '', email: '', address: '', note: '' })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating client:', error)

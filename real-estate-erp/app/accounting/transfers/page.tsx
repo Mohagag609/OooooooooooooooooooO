@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowRight, Plus, Search, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Cashbox {
   id: string
@@ -94,10 +95,10 @@ export default function TransfersPage() {
         })
       })
 
-      const data = await response.json()
+      const data = await parseApiResponse(response)
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create transfer')
+        throw new Error(getErrorMessage(data))
       }
 
       setFormData({
