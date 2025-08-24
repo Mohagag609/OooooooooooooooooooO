@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const createReturnSchema = z.object({
-  unitId: z.string().min(1, 'الوحدة مطلوبة'),
+  contractId: z.string().min(1, 'العقد مطلوب'),
+  partnerId: z.string().optional(),
+  date: z.string().transform(str => new Date(str)),
+  amount: z.number().positive(),
   reason: z.string().optional(),
-  resaleStatus: z.enum(['pending', 'resold']).default('pending')
+  status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
+  note: z.string().optional()
 })
 
 export async function GET() {
@@ -13,7 +19,8 @@ export async function GET() {
     const returns = await prisma.return.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        unit: true
+        contract: true,
+        partner: true
       }
     })
     
@@ -34,21 +41,21 @@ export async function POST(request: Request) {
     // التحقق من البيانات
     const validatedData = createReturnSchema.parse(body)
     
-    // التحقق من أن الوحدة مباعة
-    const unit = await prisma.unit.findUnique({
-      where: { id: validatedData.unitId }
+    // التحقق من صحة العقد
+    const contract = await prisma.contract.findUnique({
+      where: { id: validatedData.contractId }
     })
     
-    if (!unit) {
+    if (!contract) {
       return NextResponse.json(
-        { error: 'الوحدة غير موجودة' },
+        { error: 'العقد غير موجود' },
         { status: 404 }
       )
     }
     
-    if (unit.status !== 'sold') {
+    if (contract.status !== 'active') {
       return NextResponse.json(
-        { error: 'يمكن فقط إرجاع الوحدات المباعة' },
+        { error: 'يمكن فقط إرجاع العقود النشطة' },
         { status: 400 }
       )
     }
@@ -57,14 +64,9 @@ export async function POST(request: Request) {
     const returnRecord = await prisma.return.create({
       data: validatedData,
       include: {
-        unit: true
+        contract: true,
+        partner: true
       }
-    })
-    
-    // تحديث حالة الوحدة إلى "returned"
-    await prisma.unit.update({
-      where: { id: validatedData.unitId },
-      data: { status: 'returned' }
     })
     
     // إضافة سجل تدقيق
@@ -74,7 +76,8 @@ export async function POST(request: Request) {
         entity: 'Return',
         entityId: returnRecord.id,
         meta: { 
-          unitCode: unit.code,
+          contractId: validatedData.contractId,
+          amount: validatedData.amount,
           reason: validatedData.reason 
         }
       }

@@ -9,14 +9,6 @@ interface TDocumentDefinitions {
   pageOrientation?: 'portrait' | 'landscape'
 }
 
-// دعم اللغة العربية في PDF
-const arabicFont = {
-  normal: 'Helvetica',
-  bold: 'Helvetica-Bold',
-  italics: 'Helvetica-Oblique',
-  bolditalics: 'Helvetica-BoldOblique'
-}
-
 // بناء تقرير PDF للأقساط
 export async function buildInstallmentsPdf() {
   // جلب أول 100 قسط
@@ -79,7 +71,6 @@ export async function buildInstallmentsPdf() {
       }
     ],
     defaultStyle: {
-      font: 'Helvetica',
       fontSize: 10
     },
     styles: {

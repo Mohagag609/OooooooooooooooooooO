@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 // Schema للتحقق من البيانات
 const createPartnerSchema = z.object({
+  code: z.string().min(1, 'كود الشريك مطلوب'),
   name: z.string().min(1, 'اسم الشريك مطلوب'),
   phone: z.string().optional(),
+  email: z.string().email().optional().or(z.literal('')),
+  type: z.enum(['buyer', 'seller', 'investor']),
+  percentage: z.number().min(0).max(100).optional(),
   note: z.string().optional()
 })
 
@@ -15,7 +21,10 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
-          select: { projects: true }
+          select: { 
+            contracts: true,
+            returns: true 
+          }
         }
       }
     })
@@ -33,15 +42,31 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    console.log('Received partner data:', body)
     
     // التحقق من البيانات
     const validatedData = createPartnerSchema.parse(body)
+    
+    // التحقق من عدم تكرار الكود
+    const existingPartner = await prisma.partner.findUnique({
+      where: { code: validatedData.code }
+    })
+    
+    if (existingPartner) {
+      return NextResponse.json(
+        { error: 'كود الشريك موجود بالفعل' },
+        { status: 400 }
+      )
+    }
     
     const partner = await prisma.partner.create({
       data: validatedData,
       include: {
         _count: {
-          select: { projects: true }
+          select: { 
+            contracts: true,
+            returns: true 
+          }
         }
       }
     })
@@ -59,15 +84,23 @@ export async function POST(request: Request) {
     return NextResponse.json(partner, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.errors)
       return NextResponse.json(
-        { error: 'بيانات غير صحيحة', details: error.errors },
+        { 
+          error: 'بيانات غير صحيحة', 
+          details: error.errors,
+          message: error.errors.map(e => `${e.path}: ${e.message}`).join(', ')
+        },
         { status: 400 }
       )
     }
     
     console.error('Error creating partner:', error)
     return NextResponse.json(
-      { error: 'حدث خطأ في إنشاء الشريك' },
+      { 
+        error: 'حدث خطأ في إنشاء الشريك',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

@@ -92,6 +92,7 @@ export async function matchBankCredits({
         data: {
           action: 'UPDATE',
           entity: 'BankMatch',
+          entityId: credit.id, // استخدام معرف البنك كـ entityId
           meta: {
             bankImportId: credit.id,
             installmentId: matchingInstallment.id,

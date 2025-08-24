@@ -31,14 +31,10 @@ export async function runLocalBackup() {
         
         // بيانات الشركاء والإرجاعات
         partners: await prisma.partner.findMany(),
-        projectPartners: await prisma.projectPartner.findMany(),
         returns: await prisma.return.findMany(),
         
         // البيانات المحاسبية
-        accounts: await prisma.account.findMany(),
         cashboxes: await prisma.cashbox.findMany(),
-        journalEntries: await prisma.journalEntry.findMany(),
-        journalLines: await prisma.journalLine.findMany(),
         vouchers: await prisma.voucher.findMany(),
         transfers: await prisma.transfer.findMany(),
         
@@ -53,8 +49,11 @@ export async function runLocalBackup() {
         totalUnits: 0,
         totalContracts: 0,
         totalInstallments: 0,
-        totalAccounts: 0,
-        totalJournalEntries: 0,
+        totalPartners: 0,
+        totalReturns: 0,
+        totalCashboxes: 0,
+        totalVouchers: 0,
+        totalTransfers: 0,
         totalBankImports: 0
       }
     }
@@ -65,8 +64,11 @@ export async function runLocalBackup() {
       totalUnits: data.data.units.length,
       totalContracts: data.data.contracts.length,
       totalInstallments: data.data.installments.length,
-      totalAccounts: data.data.accounts.length,
-      totalJournalEntries: data.data.journalEntries.length,
+      totalPartners: data.data.partners.length,
+      totalReturns: data.data.returns.length,
+      totalCashboxes: data.data.cashboxes.length,
+      totalVouchers: data.data.vouchers.length,
+      totalTransfers: data.data.transfers.length,
       totalBankImports: data.data.bankImports.length
     }
 
@@ -83,6 +85,7 @@ export async function runLocalBackup() {
       data: {
         action: 'BACKUP',
         entity: 'Database',
+        entityId: fileName, // استخدام اسم الملف كـ entityId
         meta: {
           fileName,
           filePath,

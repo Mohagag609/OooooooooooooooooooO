@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { listBackups } from '@/lib/backup'
 
 export async function GET() {

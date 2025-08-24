@@ -1,8 +1,25 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { ThemeProvider } from '@/components/providers/theme-provider'
+import { AppSidebar } from '@/components/ui/app-sidebar'
+import { GlassHeader } from '@/components/ui/glass-header'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { NotificationsDrawer } from '@/components/ui/notifications-drawer'
+import { CommandPalette } from '@/components/ui/command-palette'
+import { Footer } from '@/components/ui/footer'
+import LoggerProvider from '@/components/system/LoggerProvider'
+import { Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'نظام ERP العقاري المتكامل',
-  description: 'نظام إدارة العقارات والمالية',
+  description: 'نظام محاسبي وإداري متكامل لشركات المقاولات والعقارات',
 }
 
 export default function RootLayout({
@@ -11,128 +28,51 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl">
-      <head>
-        <style jsx global>{`
-          * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
-          
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-          }
-          
-          .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          
-          .navbar {
-            background-color: #1976d2;
-            color: white;
-            padding: 15px 0;
-            margin-bottom: 30px;
-          }
-          
-          .navbar a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-          }
-          
-          .navbar a:hover {
-            text-decoration: underline;
-          }
-          
-          .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          }
-          
-          .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-          }
-          
-          .table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          
-          .table th,
-          .table td {
-            padding: 12px;
-            text-align: right;
-            border-bottom: 1px solid #ddd;
-          }
-          
-          .table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-          }
-          
-          .btn {
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-          }
-          
-          .btn:hover {
-            background-color: #1565c0;
-          }
-          
-          .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-          }
-          
-          .status-badge.pending {
-            background-color: #fff3cd;
-            color: #856404;
-          }
-          
-          .status-badge.paid {
-            background-color: #d4edda;
-            color: #155724;
-          }
-          
-          .status-badge.overdue {
-            background-color: #f8d7da;
-            color: #721c24;
-          }
-        `}</style>
-      </head>
-      <body>
-        <nav className="navbar">
-          <div className="container">
-            <a href="/">الرئيسية</a>
-            <a href="/dashboard">لوحة التحكم</a>
-            <a href="/real-estate/installments">الأقساط</a>
-            <a href="/real-estate/partners">الشركاء</a>
-            <a href="/real-estate/returns">الإرجاعات</a>
-          </div>
-        </nav>
-        <main className="container">
-          {children}
-        </main>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LoggerProvider>
+            <CommandPalette />
+            <div className="flex h-screen overflow-hidden bg-background">
+              {/* Sidebar */}
+              <AppSidebar />
+              
+              {/* Main Content */}
+              <div className="flex flex-1 flex-col overflow-hidden">
+                {/* Glass Header */}
+                <GlassHeader>
+                  {/* Search Bar */}
+                  <div className="relative w-full max-w-md">
+                    <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="بحث في النظام... (Ctrl+K)"
+                      className="pr-10 backdrop-blur-sm bg-white/50 dark:bg-slate-900/50 border-white/20"
+                    />
+                  </div>
+                  
+                  {/* Header Actions */}
+                  <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <NotificationsDrawer />
+                  </div>
+                </GlassHeader>
+            
+                            {/* Page Content */}
+                <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background via-background to-muted/20">
+                  <div className="container mx-auto max-w-[1400px] px-4 md:px-6 lg:px-10 py-6 pb-14">
+                    {children}
+                  </div>
+                  <Footer />
+                </main>
+              </div>
+            </div>
+          </LoggerProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
