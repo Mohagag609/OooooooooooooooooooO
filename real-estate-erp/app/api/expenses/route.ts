@@ -61,15 +61,11 @@ export async function POST(request: NextRequest) {
     // إضافة سجل تدقيق
     await prisma.auditLog.create({
       data: {
+        userId: 'system',
         action: 'CREATE',
         entity: 'Expense',
         entityId: expense.id,
-        meta: { 
-          type: expense.type,
-          amount: expense.amount.toString(),
-          supplierId: expense.supplierId,
-          projectId: expense.projectId
-        }
+        details: `Expense created: ${expense.amount} for ${expense.type}`
       }
     })
     
