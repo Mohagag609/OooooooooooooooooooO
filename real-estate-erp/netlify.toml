@@ -1,0 +1,58 @@
+# Netlify configuration file
+
+[build]
+  # Directory to change to before starting a build
+  base = ""
+  
+  # Directory that contains the deploy-ready HTML files and assets
+  publish = ".next"
+  
+  # Build command
+  command = "npm run build"
+  
+  # Node version for the build
+  environment = { NODE_VERSION = "18" }
+
+[build.environment]
+  # Database connection URL (will be overridden by environment variables in Netlify UI)
+  DATABASE_URL = "postgresql://neondb_owner:npg_cLMyk3rOsE0X@ep-blue-flower-adgn3nwt-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  
+  # Next.js specific environment variables
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects (example - adjust as needed)
+[[redirects]]
+  from = "/api/*"
+  to = "/api/:splat"
+  status = 200
+
+# Function configuration for Next.js API routes
+[functions]
+  directory = ".netlify/functions"
+  node_bundler = "esbuild"
+
+# Next.js specific plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Development settings
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 3000
+  publish = ".next"
+  autoLaunch = true
