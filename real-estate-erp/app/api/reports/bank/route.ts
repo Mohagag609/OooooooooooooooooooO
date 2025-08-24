@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { buildBankExcel } from '@/lib/reporting'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30 // زيادة timeout إلى 30 ثانية
+
 export async function GET() {
   try {
     // بناء ملف Excel
