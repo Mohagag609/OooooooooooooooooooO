@@ -10,10 +10,10 @@ export async function GET() {
     const workbook = await buildBankExcel()
     
     // تحويل workbook إلى buffer
-    const buffer = await workbook.xlsx.writeBuffer()
+    const buffer: ArrayBuffer = await workbook.xlsx.writeBuffer()
     
     // إرجاع Excel كـ response
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as any, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="bank-report-${new Date().toISOString().split('T')[0]}.xlsx"`
