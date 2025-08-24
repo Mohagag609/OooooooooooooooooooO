@@ -72,7 +72,7 @@ export default function ClientsPage() {
 
   useEffect(() => {
     fetchClients()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchClients = async () => {
     try {
@@ -260,7 +260,7 @@ export default function ClientsPage() {
         },
       },
     ],
-    []
+    [] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   return (
