@@ -79,19 +79,19 @@ export async function POST(request: NextRequest) {
       // Generate voucher number
       const lastVoucher = await tx.voucher.findFirst({
         where: { type: validatedData.type },
-        orderBy: { voucherNumber: 'desc' }
+        orderBy: { voucherNo: 'desc' }
       })
       
       const prefix = validatedData.type === 'RECEIPT' ? 'RCV' : 'PMT'
       const nextNumber = lastVoucher 
-        ? parseInt(lastVoucher.voucherNumber.split('-')[1]) + 1
+        ? parseInt(lastVoucher.voucherNo.split('-')[1]) + 1
         : 1
-      const voucherNumber = `${prefix}-${nextNumber.toString().padStart(6, '0')}`
+      const voucherNo = `${prefix}-${nextNumber.toString().padStart(6, '0')}`
 
       // Create the voucher
       const voucher = await tx.voucher.create({
         data: {
-          voucherNumber,
+          voucherNo,
           date: new Date(validatedData.date),
           type: validatedData.type,
           amount: validatedData.amount,
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
           action: 'CREATE',
           entity: 'Voucher',
           entityId: voucher.id,
-          details: `${validatedData.type} voucher ${voucherNumber} created: ${validatedData.amount} for ${entityName || 'cash'}`
+          details: `${validatedData.type} voucher ${voucherNo} created: ${validatedData.amount} for ${entityName || 'cash'}`
         }
       })
 

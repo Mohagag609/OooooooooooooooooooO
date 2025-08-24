@@ -415,6 +415,7 @@ model Cashbox {
 // التحويلات بين الصناديق
 model Transfer {
   id            String    @id @default(cuid())
+  transferNumber String   @unique
   fromCashboxId String
   toCashboxId   String
   amount        Decimal   @db.Decimal(18, 2)
@@ -437,6 +438,7 @@ model Voucher {
   amount      Decimal   @db.Decimal(18, 2)
   cashboxId   String
   clientId    String?
+  supplierId  String?
   description String?
   reference   String?
   createdAt   DateTime  @default(now())
@@ -444,6 +446,7 @@ model Voucher {
   
   cashbox     Cashbox   @relation(fields: [cashboxId], references: [id])
   client      Client?   @relation(fields: [clientId], references: [id])
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
 }
 
 // ============================================

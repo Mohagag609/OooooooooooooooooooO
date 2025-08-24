@@ -32,7 +32,7 @@ interface Supplier {
 
 interface Voucher {
   id: string
-  voucherNumber: string
+  voucherNo: string
   date: string
   type: 'RECEIPT' | 'PAYMENT'
   amount: number
@@ -177,13 +177,13 @@ export default function VouchersPage() {
   const paymentVouchers = vouchers.filter(v => v.type === 'PAYMENT')
 
   const filteredReceipts = receiptVouchers.filter(voucher =>
-    voucher.voucherNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    voucher.voucherNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     voucher.client?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     voucher.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const filteredPayments = paymentVouchers.filter(voucher =>
-    voucher.voucherNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    voucher.voucherNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     voucher.supplier?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     voucher.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -503,7 +503,7 @@ export default function VouchersPage() {
                           animate={{ opacity: 1 }}
                           className="border-b hover:bg-muted/50 transition-colors"
                         >
-                          <td className="py-3 px-4">{voucher.voucherNumber}</td>
+                          <td className="py-3 px-4">{voucher.voucherNo}</td>
                           <td className="py-3 px-4">{formatDateShort(voucher.date)}</td>
                           <td className="py-3 px-4">{voucher.client?.name || '-'}</td>
                           <td className="py-3 px-4">{voucher.cashbox.name}</td>
@@ -551,7 +551,7 @@ export default function VouchersPage() {
                           animate={{ opacity: 1 }}
                           className="border-b hover:bg-muted/50 transition-colors"
                         >
-                          <td className="py-3 px-4">{voucher.voucherNumber}</td>
+                          <td className="py-3 px-4">{voucher.voucherNo}</td>
                           <td className="py-3 px-4">{formatDateShort(voucher.date)}</td>
                           <td className="py-3 px-4">{voucher.supplier?.name || '-'}</td>
                           <td className="py-3 px-4">{voucher.cashbox.name}</td>
