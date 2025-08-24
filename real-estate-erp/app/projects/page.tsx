@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, Building2, Calendar, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 import { formatCurrency, formatDate } from "@/lib/utils"
 
 interface Project {
@@ -107,7 +108,7 @@ export default function ProjectsPage() {
         body: JSON.stringify(dataToSend),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchProjects()
@@ -124,7 +125,7 @@ export default function ProjectsPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating project:', error)

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, FileText, Calendar, Calculator, DollarSign, Users } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Contract {
   id: string
@@ -167,7 +168,7 @@ export default function ContractsPage() {
         body: JSON.stringify(dataToSend),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchContracts()
@@ -187,7 +188,7 @@ export default function ContractsPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating contract:', error)

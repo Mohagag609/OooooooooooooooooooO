@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Receipt, X, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDate } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Employee {
   id: string
@@ -149,7 +150,7 @@ export default function PayrollsPage() {
         }),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchData()
@@ -167,7 +168,7 @@ export default function PayrollsPage() {
         setSelectedEmployee(null)
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating payroll:', error)

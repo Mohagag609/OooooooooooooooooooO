@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Partner {
   id: string
@@ -69,14 +70,14 @@ export default function PartnersPage() {
         body: JSON.stringify(dataToSend),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchPartners()
         setFormData({ code: '', name: '', phone: '', email: '', type: 'investor', percentage: '', note: '' })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating partner:', error)

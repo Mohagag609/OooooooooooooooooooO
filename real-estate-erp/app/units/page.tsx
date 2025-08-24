@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Home, MapPin, Layers, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Unit {
   id: string
@@ -111,7 +112,7 @@ export default function UnitsPage() {
         body: JSON.stringify(dataToSend),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchUnits()
@@ -129,7 +130,7 @@ export default function UnitsPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating unit:', error)

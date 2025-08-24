@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Package, AlertTriangle, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Material {
   id: string
@@ -76,7 +77,7 @@ export default function MaterialsPage() {
         }),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchMaterials()
@@ -90,7 +91,7 @@ export default function MaterialsPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating material:', error)

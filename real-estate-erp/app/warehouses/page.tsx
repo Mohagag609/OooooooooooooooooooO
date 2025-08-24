@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Search, Warehouse, X } from "lucide-react"
 import { motion } from "framer-motion"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Warehouse {
   id: string
@@ -64,14 +65,14 @@ export default function WarehousesPage() {
         body: JSON.stringify(formData),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchWarehouses()
         setFormData({ code: '', name: '', location: '' })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating warehouse:', error)

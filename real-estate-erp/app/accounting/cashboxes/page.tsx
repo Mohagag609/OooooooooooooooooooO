@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Wallet, ArrowUpDown, DollarSign } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Cashbox {
   id: string
@@ -78,7 +79,7 @@ export default function CashboxesPage() {
         body: JSON.stringify(formData),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchCashboxes()
@@ -90,7 +91,7 @@ export default function CashboxesPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating cashbox:', error)
@@ -120,7 +121,7 @@ export default function CashboxesPage() {
         }),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchCashboxes()
@@ -133,7 +134,7 @@ export default function CashboxesPage() {
         })
         setShowTransferForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في التحويل')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating transfer:', error)

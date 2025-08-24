@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, ChevronRight, ChevronDown, Calculator } from "lucide-react"
 import { motion } from "framer-motion"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface Account {
   id: string
@@ -80,7 +81,7 @@ export default function AccountsPage() {
         body: JSON.stringify(formData),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchAccounts()
@@ -94,7 +95,7 @@ export default function AccountsPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating account:', error)

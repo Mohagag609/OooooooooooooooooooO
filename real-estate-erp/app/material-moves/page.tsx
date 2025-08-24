@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, ArrowUpCircle, ArrowDownCircle, ArrowLeftRight, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
+import { parseApiResponse, getErrorMessage } from "@/lib/api-utils"
 
 interface MaterialMove {
   id: string
@@ -124,7 +125,7 @@ export default function MaterialMovesPage() {
         }),
       })
       
-      const result = await response.json()
+      const result = await parseApiResponse(response)
       
       if (response.ok) {
         await fetchData()
@@ -141,7 +142,7 @@ export default function MaterialMovesPage() {
         })
         setShowForm(false)
       } else {
-        setError(result.error || 'حدث خطأ في حفظ البيانات')
+        setError(getErrorMessage(result))
       }
     } catch (error) {
       console.error('Error creating move:', error)
