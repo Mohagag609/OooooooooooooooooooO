@@ -1,120 +1,152 @@
 # نظام ERP العقاري المتكامل
 
-نظام إدارة العقارات والمحاسبة بدون نظام صلاحيات - مصمم للعمل مباشرة بعد التثبيت.
+نظام شامل لإدارة العقارات والمبيعات والأقساط مع نظام محاسبي متكامل.
 
-## متطلبات النظام
+## المميزات الرئيسية
 
-- Node.js 18+ 
-- PostgreSQL
+- 📊 لوحة تحكم شاملة بإحصائيات فورية
+- 🏢 إدارة المشاريع العقارية والوحدات
+- 👥 إدارة العملاء والعقود
+- 💰 نظام أقساط متقدم مع متابعة المدفوعات
+- 🤝 إدارة الشركاء والمستثمرين
+- 🔄 نظام الإرجاعات والاستردادات
+- 💳 إدارة الصناديق والتحويلات المالية
+- 📑 سندات القبض والصرف
+- 📊 تقارير شاملة (PDF/Excel)
+- 🔒 نظام تدقيق لتتبع جميع العمليات
+
+## التقنيات المستخدمة
+
+- **Frontend**: Next.js 14 (App Router)
+- **Database**: PostgreSQL (Neon)
+- **ORM**: Prisma
+- **Styling**: CSS Modules
+- **Reports**: PDFMake, ExcelJS
+- **Deployment**: Netlify
+
+## متطلبات التشغيل
+
+- Node.js 18+
+- PostgreSQL database
 - npm أو yarn
 
-## البدء السريع
+## التثبيت والإعداد
 
-1. **استنساخ المشروع وتثبيت الاعتماديات:**
+### 1. استنساخ المشروع
+
 ```bash
-git clone [repository-url]
+git clone https://github.com/Mohagag609/OooooooooooooooooooO.git
 cd real-estate-erp
+```
+
+### 2. تثبيت المكتبات
+
+```bash
 npm install
 ```
 
-2. **إعداد قاعدة البيانات:**
-   - انسخ ملف `.env.example` إلى `.env`
-   - عدّل `DATABASE_URL` في ملف `.env` ليشير إلى قاعدة بياناتك PostgreSQL
+### 3. إعداد قاعدة البيانات
 
-3. **تشغيل الهجرات (Migrations):**
-```bash
-npx prisma migrate dev --name init
+أنشئ ملف `.env.local` في المجلد الرئيسي وأضف:
+
+```env
+DATABASE_URL="postgresql://your_user:your_password@your_host/your_database?sslmode=require"
+
+# إعدادات أخرى اختيارية
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+ENABLE_AUTH=false
+AUTH_TRUST_HOST=true
+BACKUP_PROVIDER=local
+BACKUP_LOCAL_PATH=./backups
 ```
 
-4. **تشغيل البيانات التجريبية (Seed):**
+### 4. إنشاء الجداول في قاعدة البيانات
+
+```bash
+npx prisma db push
+```
+
+### 5. إضافة البيانات الأولية (اختياري)
+
 ```bash
 npm run db:seed
 ```
 
-5. **تشغيل المشروع:**
+### 6. تشغيل المشروع
+
 ```bash
 npm run dev
 ```
 
-المشروع سيعمل على: http://localhost:3000
+افتح [http://localhost:3000](http://localhost:3000) في المتصفح.
 
-## أوامر مفيدة
+## النشر على Netlify
+
+### 1. إعداد Netlify
+
+1. قم بإنشاء حساب على [Netlify](https://netlify.com)
+2. اربط مستودع GitHub الخاص بك
+3. الإعدادات ستكون محددة تلقائياً من `netlify.toml`
+
+### 2. إعداد متغيرات البيئة في Netlify
+
+اذهب إلى **Site settings → Environment variables** وأضف:
+
+- `DATABASE_URL`: رابط قاعدة البيانات PostgreSQL
+- أي متغيرات بيئة أخرى تحتاجها
+
+### 3. إعداد قاعدة البيانات في Neon
+
+1. أنشئ حساب على [Neon](https://neon.tech)
+2. أنشئ قاعدة بيانات جديدة
+3. احصل على رابط الاتصال من لوحة التحكم
+4. استخدم الرابط في `DATABASE_URL`
+
+### 4. تشغيل Migrations بعد النشر
+
+بعد نشر الموقع، قم بتشغيل:
 
 ```bash
-# تطوير
-npm run dev          # تشغيل خادم التطوير
-
-# قاعدة البيانات
-npm run db:migrate   # تشغيل الهجرات
-npm run db:seed      # تشغيل البيانات التجريبية
-npm run db:studio    # فتح Prisma Studio لإدارة البيانات
-
-# بناء المشروع
-npm run build        # بناء المشروع للإنتاج
-npm start            # تشغيل المشروع المبني
+# من جهازك المحلي مع نفس DATABASE_URL
+npx prisma db push
+npm run db:seed  # اختياري
 ```
 
-## البيانات التجريبية
-
-يحتوي ملف seed على:
-- عميل: أحمد محمد علي
-- مشروع: كمبوند النخيل (PRJ-001)
-- وحدة: U-101 (شقة سكنية 120م²، سعر 1,500,000 جنيه)
-- عقد: 24 شهر بنظام أقساط شهرية
-- أقساط: 24 قسط (3 مدفوعة، بعضها متأخر، والباقي مستحق)
-
-## روابط الفحص السريع
-
-- **Health Check:** http://localhost:3000/api/health
-- **لوحة التحكم:** http://localhost:3000/dashboard
-- **جدول الأقساط:** http://localhost:3000/real-estate/installments
-
-## حل المشاكل الشائعة (Troubleshooting)
-
-### شاشة بيضاء أو خطأ في التطبيق؟
-1. تحقق من `/api/health` - إذا ظهر خطأ، تأكد من:
-   - صحة `DATABASE_URL` في ملف `.env`
-   - تشغيل خادم PostgreSQL
-   - تشغيل الهجرات: `npx prisma migrate dev`
-
-### أخطاء Prisma؟
-```bash
-npx prisma migrate reset  # إعادة تعيين قاعدة البيانات
-npm run db:seed          # إعادة تشغيل البيانات التجريبية
-```
-
-### لا تظهر البيانات في الجداول؟
-- تأكد من تشغيل `npm run db:seed`
-- افتح Prisma Studio للتحقق: `npm run db:studio`
-
-## ملاحظات هامة
-
-- **لا يوجد نظام صلاحيات:** النظام مصمم للعمل بدون تسجيل دخول أو صلاحيات
-- **ENABLE_AUTH=false:** ثابت في `.env` - لا تغيره
-- جميع الصفحات متاحة للجميع
-
-## هيكل المشروع
+## البنية والهيكل
 
 ```
 real-estate-erp/
-├── app/                    # صفحات Next.js App Router
+├── app/                    # Next.js App Router
 │   ├── api/               # API Routes
 │   ├── dashboard/         # لوحة التحكم
 │   └── real-estate/       # صفحات العقارات
-├── lib/                   # ملفات المساعدة
-│   └── prisma.ts         # عميل Prisma
-├── prisma/               
-│   ├── schema.prisma     # نماذج قاعدة البيانات
-│   └── seed.ts          # البيانات التجريبية
-└── public/              # الملفات الثابتة
+├── lib/                    # المكتبات المساعدة
+│   ├── prisma.ts          # Prisma client
+│   ├── accounting.ts      # دوال المحاسبة
+│   ├── backup.ts          # نظام النسخ الاحتياطي
+│   └── reporting.ts       # توليد التقارير
+├── prisma/
+│   ├── schema.prisma      # مخطط قاعدة البيانات
+│   └── seed.ts            # بيانات أولية
+├── public/                 # الملفات الثابتة
+└── types/                  # TypeScript types
 ```
 
-## المرحلة الحالية: المرحلة 1 ✅
+## المساهمة
 
-تم إنجاز:
-- ✅ إعداد المشروع الأساسي
-- ✅ نماذج قاعدة البيانات (Client, Unit, Contract, Installment)
-- ✅ Health Check API
-- ✅ لوحة تحكم بإحصائيات حقيقية
-- ✅ صفحة عرض الأقساط
-- ✅ بيانات تجريبية شاملة
+نرحب بالمساهمات! يرجى:
+
+1. Fork المشروع
+2. إنشاء فرع جديد (`git checkout -b feature/amazing-feature`)
+3. Commit التغييرات (`git commit -m 'إضافة ميزة رائعة'`)
+4. Push إلى الفرع (`git push origin feature/amazing-feature`)
+5. فتح Pull Request
+
+## الترخيص
+
+هذا المشروع مرخص تحت رخصة MIT - انظر ملف [LICENSE](LICENSE) للتفاصيل.
+
+## الدعم
+
+للمساعدة أو الإبلاغ عن مشاكل، يرجى فتح [Issue](https://github.com/Mohagag609/OooooooooooooooooooO/issues) على GitHub.
