@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { Decimal } from '@prisma/client/runtime/library'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,8 +64,9 @@ export async function POST(request: NextRequest) {
     const material = await prisma.material.create({
       data: {
         ...validatedData,
-        currentQty: 0,
-        lastPrice: 0
+        minQuantity: new Decimal(validatedData.minQuantity),
+        currentQty: new Decimal(0),
+        lastPrice: new Decimal(0)
       },
       include: {
         _count: {

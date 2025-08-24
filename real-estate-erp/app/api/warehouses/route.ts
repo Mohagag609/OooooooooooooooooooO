@@ -8,8 +8,7 @@ export const dynamic = 'force-dynamic'
 const createWarehouseSchema = z.object({
   code: z.string().min(1, 'كود المخزن مطلوب'),
   name: z.string().min(1, 'اسم المخزن مطلوب'),
-  location: z.string().optional(),
-  isActive: z.boolean().default(true)
+  location: z.string().optional()
 })
 
 export async function GET() {
