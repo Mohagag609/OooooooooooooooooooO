@@ -6,9 +6,10 @@ import { z } from 'zod'
 
 // Schema للتحقق من البيانات
 const createPartnerSchema = z.object({
+  code: z.string().min(1, 'كود الشريك مطلوب'),
   name: z.string().min(1, 'اسم الشريك مطلوب'),
   phone: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email().optional().or(z.literal('')),
   type: z.enum(['buyer', 'seller', 'investor']),
   percentage: z.number().min(0).max(100).optional(),
   note: z.string().optional()
@@ -45,6 +46,18 @@ export async function POST(request: Request) {
     
     // التحقق من البيانات
     const validatedData = createPartnerSchema.parse(body)
+    
+    // التحقق من عدم تكرار الكود
+    const existingPartner = await prisma.partner.findUnique({
+      where: { code: validatedData.code }
+    })
+    
+    if (existingPartner) {
+      return NextResponse.json(
+        { error: 'كود الشريك موجود بالفعل' },
+        { status: 400 }
+      )
+    }
     
     const partner = await prisma.partner.create({
       data: validatedData,

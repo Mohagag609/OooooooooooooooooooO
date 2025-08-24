@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface Partner {
   id: string
+  code: string
   name: string
   phone?: string
   email?: string
@@ -23,6 +24,7 @@ export default function PartnersPage() {
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
+    code: '',
     name: '',
     phone: '',
     email: '',
@@ -71,7 +73,7 @@ export default function PartnersPage() {
       
       if (response.ok) {
         await fetchPartners()
-        setFormData({ name: '', phone: '', email: '', type: 'investor', percentage: '', note: '' })
+        setFormData({ code: '', name: '', phone: '', email: '', type: 'investor', percentage: '', note: '' })
         setShowForm(false)
       } else {
         setError(result.message || result.error || 'حدث خطأ في حفظ البيانات')
@@ -122,6 +124,17 @@ export default function PartnersPage() {
                 {error}
               </div>
             )}
+            
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px' }}>كود الشريك *</label>
+              <input
+                type="text"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                required
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+              />
+            </div>
             
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px' }}>اسم الشريك *</label>
@@ -206,6 +219,7 @@ export default function PartnersPage() {
             <table className="table">
               <thead>
                 <tr>
+                  <th>الكود</th>
                   <th>اسم الشريك</th>
                   <th>النوع</th>
                   <th>رقم الهاتف</th>
@@ -220,6 +234,7 @@ export default function PartnersPage() {
               <tbody>
                 {partners.map((partner) => (
                   <tr key={partner.id}>
+                    <td>{partner.code}</td>
                     <td>{partner.name}</td>
                     <td>{getPartnerTypeText(partner.type)}</td>
                     <td>{partner.phone || '-'}</td>
