@@ -34,7 +34,7 @@ export function GradientHero({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" as const }}
       className={cn(
         "relative overflow-hidden rounded-3xl p-6 md:p-10 text-white",
         `bg-gradient-to-br ${gradients[gradient]}`,
@@ -56,7 +56,7 @@ export function GradientHero({
         transition={{
           duration: 6,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut" as const
         }}
       />
       <motion.div
@@ -68,7 +68,7 @@ export function GradientHero({
         transition={{
           duration: 8,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut" as const
         }}
       />
 

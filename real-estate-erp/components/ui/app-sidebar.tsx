@@ -226,7 +226,7 @@ export function AppSidebar() {
   return (
     <motion.aside
       animate={{ width: collapsed ? 80 : 280 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      transition={{ duration: 0.3, ease: "easeInOut" as const }}
       className={cn(
         "relative flex h-screen flex-col border-l bg-background",
         "shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]"

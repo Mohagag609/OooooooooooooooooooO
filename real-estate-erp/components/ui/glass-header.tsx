@@ -18,7 +18,7 @@ export function GlassHeader({
     <motion.header
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" as const }}
       className={cn(
         "relative z-40 w-full",
         sticky && "sticky top-0",

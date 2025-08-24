@@ -42,7 +42,7 @@ export function EmptyState({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" as const }}
       className={cn(
         "flex min-h-[400px] flex-col items-center justify-center p-8 text-center",
         className
@@ -74,7 +74,7 @@ export function EmptyState({
           transition={{
             duration: 3,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut" as const
           }}
         />
         <motion.div
@@ -85,7 +85,7 @@ export function EmptyState({
           transition={{
             duration: 2.5,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut" as const
           }}
         />
       </motion.div>

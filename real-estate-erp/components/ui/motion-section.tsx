@@ -24,7 +24,7 @@ export function MotionSection({
       opacity: 1,
       transition: {
         delay,
-        when: "beforeChildren",
+        when: "beforeChildren" as const,
         staggerChildren: stagger ? staggerDelay : 0
       }
     }
@@ -37,7 +37,7 @@ export function MotionSection({
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
+        ease: "easeOut" as const
       }
     }
   }
