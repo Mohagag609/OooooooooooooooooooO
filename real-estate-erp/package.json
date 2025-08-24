@@ -14,9 +14,11 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.7.1",
+    "@prisma/client": "^6.14.0",
     "decimal.js": "^10.4.3",
+    "exceljs": "^4.4.0",
     "next": "14.0.4",
+    "pdfmake": "^0.2.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zod": "^3.22.4"
@@ -27,7 +29,7 @@
     "@types/react-dom": "^18.2.18",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
-    "prisma": "^5.7.1",
+    "prisma": "^6.14.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }

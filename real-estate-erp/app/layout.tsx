@@ -126,6 +126,8 @@ export default function RootLayout({
             <a href="/">الرئيسية</a>
             <a href="/dashboard">لوحة التحكم</a>
             <a href="/real-estate/installments">الأقساط</a>
+            <a href="/real-estate/partners">الشركاء</a>
+            <a href="/real-estate/returns">الإرجاعات</a>
           </div>
         </nav>
         <main className="container">

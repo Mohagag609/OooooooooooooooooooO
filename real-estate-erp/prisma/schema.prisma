@@ -86,6 +86,7 @@ model Installment {
   createdAt  DateTime  @default(now())
   
   contract   Contract  @relation(fields: [contractId], references: [id])
+  bankImports BankImport[]
 }
 
 // سجل التدقيق
@@ -96,4 +97,20 @@ model AuditLog {
   entityId String?
   meta     Json?
   at       DateTime @default(now())
+}
+
+// كشف البنك
+model BankImport {
+  id                   String       @id @default(cuid())
+  date                 DateTime
+  amount               Decimal      @db.Decimal(18, 2)
+  type                 String       // debit|credit
+  reference            String?
+  bankName             String?
+  description          String?
+  matchedInstallmentId String?
+  posted               Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  
+  matchedInstallment   Installment? @relation(fields: [matchedInstallmentId], references: [id])
 }
