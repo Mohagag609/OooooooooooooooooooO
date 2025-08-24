@@ -61,35 +61,61 @@ const menuItems: MenuItem[] = [
     children: [
       { id: "clients", title: "العملاء", href: "/clients", icon: Users },
       { id: "suppliers", title: "الموردين", href: "/suppliers", icon: Briefcase },
+      { id: "partners", title: "الشركاء", href: "/partners", icon: UserCheck },
+      { id: "partners-settlements", title: "مخالصات الشركاء", href: "/partners/settlements", icon: Receipt },
     ]
   },
   {
-    id: "projects",
-    title: "المشاريع والوحدات",
+    id: "real-estate",
+    title: "العقارات",
     icon: Building2,
     children: [
-      { id: "projects-list", title: "المشاريع", href: "/projects", icon: Building2 },
+      { id: "projects", title: "المشاريع", href: "/projects", icon: Building2 },
       { id: "units", title: "الوحدات", href: "/units", icon: Home },
-    ]
-  },
-  {
-    id: "contracts",
-    title: "العقود والأقساط",
-    icon: FileText,
-    children: [
-      { id: "contracts-list", title: "العقود", href: "/contracts", icon: FileText },
+      { id: "contracts", title: "العقود", href: "/contracts", icon: FileText },
       { id: "installments", title: "الأقساط", href: "/installments", icon: Calculator },
+      { id: "invoices", title: "الفواتير", href: "/invoices", icon: FileText },
+      { id: "payments", title: "المدفوعات", href: "/payments", icon: DollarSign },
     ]
   },
   {
-    id: "finance",
-    title: "المالية",
-    icon: DollarSign,
+    id: "accounting",
+    title: "المحاسبة",
+    icon: Calculator,
     children: [
-      { id: "payments", title: "المدفوعات", href: "/payments", icon: DollarSign },
+      { id: "accounts", title: "دليل الحسابات", href: "/accounting/accounts", icon: Calculator },
+      { id: "journal-entries", title: "القيود المحاسبية", href: "/accounting/journal-entries", icon: FileText },
+      { id: "cashboxes", title: "الصناديق", href: "/accounting/cashboxes", icon: Database },
+      { id: "vouchers", title: "سندات القبض والصرف", href: "/accounting/vouchers", icon: Receipt },
+      { id: "transfers", title: "التحويلات", href: "/accounting/transfers", icon: DollarSign },
       { id: "revenues", title: "الإيرادات", href: "/revenues", icon: TrendingUp },
       { id: "expenses", title: "المصروفات", href: "/expenses", icon: Receipt },
     ]
+  },
+  {
+    id: "hr",
+    title: "الموارد البشرية",
+    icon: UserCheck,
+    children: [
+      { id: "employees", title: "الموظفين", href: "/employees", icon: Users },
+      { id: "payrolls", title: "المرتبات", href: "/payrolls", icon: DollarSign },
+    ]
+  },
+  {
+    id: "warehouses",
+    title: "المخازن",
+    icon: Warehouse,
+    children: [
+      { id: "warehouses-list", title: "المخازن", href: "/warehouses", icon: Warehouse },
+      { id: "materials", title: "المواد", href: "/materials", icon: Package },
+      { id: "material-moves", title: "حركات المواد", href: "/material-moves", icon: TrendingUp },
+    ]
+  },
+  {
+    id: "reports",
+    title: "التقارير",
+    href: "/reports",
+    icon: FileBarChart,
   },
   {
     id: "settings",
