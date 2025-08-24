@@ -41,6 +41,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    console.log('Received partner data:', body)
     
     // التحقق من البيانات
     const validatedData = createPartnerSchema.parse(body)
@@ -70,15 +71,23 @@ export async function POST(request: Request) {
     return NextResponse.json(partner, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.errors)
       return NextResponse.json(
-        { error: 'بيانات غير صحيحة', details: error.errors },
+        { 
+          error: 'بيانات غير صحيحة', 
+          details: error.errors,
+          message: error.errors.map(e => `${e.path}: ${e.message}`).join(', ')
+        },
         { status: 400 }
       )
     }
     
     console.error('Error creating partner:', error)
     return NextResponse.json(
-      { error: 'حدث خطأ في إنشاء الشريك' },
+      { 
+        error: 'حدث خطأ في إنشاء الشريك',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
