@@ -143,7 +143,7 @@ export function Sidebar() {
               <ChevronRight className="h-4 w-4" />
             )}
           </button>
-          {isExpanded && (
+          {isExpanded && item.children && (
             <div className="mt-1 space-y-1">
               {item.children.map(child => renderMenuItem(child, depth + 1))}
             </div>
